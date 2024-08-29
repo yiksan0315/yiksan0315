@@ -1,6 +1,10 @@
 import Link from 'next/link';
 
-const MarginedLi = ({ children }) => {
+const MarginedLi = ({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) => {
   return <li className='mx-4'>{children}</li>;
 };
 
