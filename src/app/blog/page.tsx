@@ -1,11 +1,3 @@
 export default async function Page() {
-  let data = await fetch('https://api.vercel.app/blog');
-  let posts = await data.json();
-  return (
-    <ul>
-      {posts.map((post: any) => (
-        <li key={post.id}>{post.title}</li>
-      ))}
-    </ul>
-  );
+  return <div>블로그 기본 페이지</div>;
 }
