@@ -2,6 +2,7 @@ import matter from 'gray-matter';
 import 'katex/dist/katex.min.css';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { CodeProps } from 'react-markdown/lib/ast-to-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import rehypeKatex from 'rehype-katex';
@@ -15,8 +16,16 @@ interface MarkdownViewProps {
   filePath: string;
 }
 
+interface ChildrenProps {
+  children: string;
+}
+
+interface LinkProps extends ChildrenProps {
+  href: string;
+}
+
 const components = {
-  code({ node, className, children, ...props }) {
+  code({ node, className, children, ...props }: CodeProps) {
     const match = /language-(\w+)/.exec(className || '');
     return match ? (
       <SyntaxHighlighter
@@ -32,7 +41,7 @@ const components = {
       <code {...props}>{children}</code>
     );
   },
-  blockquote({ children }) {
+  blockquote({ children }: ChildrenProps) {
     return (
       <blockquote className='p-2 mb-2 bg-slate-900 text-white rounded-sm'>
         {children}
@@ -40,22 +49,22 @@ const components = {
     );
     // return <ObsidianCallout>{children}</ObsidianCallout>;
   },
-  h1({ children }) {
+  h1({ children }: ChildrenProps) {
     return <h1 className='text-4xl font-bold mt-6 mb-2'>{children}</h1>;
   },
-  h2({ children }) {
+  h2({ children }: ChildrenProps) {
     return <h2 className='text-3xl font-bold mt-6 mb-2'>{children}</h2>;
   },
-  h3({ children }) {
+  h3({ children }: ChildrenProps) {
     return <h2 className='text-3xl font-bold mt-6 mb-2'>{children}</h2>;
   },
-  strong({ children }) {
+  strong({ children }: ChildrenProps) {
     return <strong className='font-black text-cyan-500'>{children}</strong>;
   },
-  li({ children }) {
+  li({ children }: ChildrenProps) {
     return <li className='list-disc ml-4'>{children}</li>;
   },
-  a({ children, href }) {
+  a({ children, href }: LinkProps) {
     return (
       <Link href={href} className='text-cyan-900 underline'>
         {children}
