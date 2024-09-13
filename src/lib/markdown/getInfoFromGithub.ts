@@ -27,14 +27,14 @@ export async function getMarkdownFilesRecursively(
   let dataLists: MarkdownFile[] = [];
 
   for (const item of res) {
-    if (item.type === 'file' /* && item.name.endsWith('.md')*/) {
+    if (item.type === 'file' && item.name.endsWith('.md')) {
       dataLists.push({
-        name: item.name,
+        name: item.name.replace('.md', ''),
         path: item.path,
         url: item.path.replace(root, replacePath),
         type: 'file',
       });
-    } else if (item.type === 'dir') {
+    } else if (item.type === 'dir' && item.name !== 'attachments') {
       const subFolderFiles = await getMarkdownFilesRecursively(
         owner,
         repo,
@@ -57,10 +57,12 @@ export async function getFileContent(
   owner: string,
   repo: string,
   path: string,
-  from: string = '3. Resource'
+  root?: string
 ): Promise<string> {
   const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${from}/${path}`,
+    `https://api.github.com/repos/${owner}/${repo}/contents/${
+      root !== undefined ? root + '/' : ''
+    }${path}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,

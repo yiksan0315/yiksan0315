@@ -23,7 +23,7 @@ const TempComponent = ({
   } else {
     return (
       <li className='p-2'>
-        <Link href={path as string}>
+        <Link href={'/' + (path as string)}>
           <div>{name}</div>
           {children}
         </Link>

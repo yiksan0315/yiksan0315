@@ -1,8 +1,9 @@
+import MarkdownRender from '@/components/blog/MarkdownRender';
+import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import {
   getFileContent,
   getMarkdownFilesRecursively,
 } from '@/lib/markdown/getInfoFromGithub';
-import parseMarkdown from '@/lib/markdown/parseMarkdown';
 import MarkdownFile from '@/types/MarkdownFile';
 
 interface MarkdownPageProps {
@@ -29,8 +30,8 @@ function flattenTree({ files }: { files: MarkdownFile[] }): MarkdownFile[] {
 }
 
 export async function generateStaticParams() {
-  const owner: string = process.env.GITHUB_OWNER ?? '';
-  const repo: string = process.env.GITHUB_REPO ?? '';
+  const owner: string = process.env.GITHUB_OWNER as string;
+  const repo: string = process.env.GITHUB_REPO as string;
 
   const files: MarkdownFile[] = await getMarkdownFilesRecursively(
     owner,
@@ -40,30 +41,34 @@ export async function generateStaticParams() {
   const flattenedTree: MarkdownFile[] = flattenTree({ files });
 
   // 경로를 동적 라우팅에 맞게 변환
-  return flattenedTree.map((item: MarkdownFile) => ({
-    slug: item.path.replace(/\.md$/, '').split('/'), // .md 확장자 제거 후 슬래시로 구분
-  }));
+  return flattenedTree.map((item: MarkdownFile) => {
+    return {
+      slug: item.path.replace('3. Resource/', '').split('/'), // .md 확장자 제거 후 슬래시로 구분
+    };
+  });
 }
 
 export default async function MarkdownPage({ params }: MarkdownPageProps) {
-  const owner: string = process.env.GITHUB_OWNER ?? '';
-  const repo: string = process.env.GITHUB_REPO ?? '';
+  const owner: string = process.env.GITHUB_OWNER as string;
+  const repo: string = process.env.GITHUB_REPO as string;
 
   // 경로를 이용하여 파일의 실제 경로 생성
   const filePath = params.slug.join('/');
-  console.log(params.slug);
-
-  console.log(filePath);
-  // 파일 내용 가져오기
-  const content = await getFileContent(owner, repo, filePath);
+  const content = await getFileContent(owner, repo, filePath, '3. Resource');
+  const fileName = filePath.split('/').pop() ?? '';
 
   // 마크다운 파일을 HTML로 파싱
-  const htmlContent = await parseMarkdown(content);
+  // const htmlContent = await parseMarkdown(content);
 
   return (
-    <div>
-      <h1>{filePath}</h1> {/* 파일 경로를 제목으로 표시 */}
-      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-    </div>
+    <MaxWidthWrapper className=''>
+      {/* <div
+        className='prose max-w-full'
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      /> */}
+      <MarkdownRender fileName={fileName} filePath={filePath}>
+        {content}
+      </MarkdownRender>
+    </MaxWidthWrapper>
   );
 }
