@@ -40,7 +40,7 @@ const MarkdownRender = ({
       <hr></hr>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex, rehypeRaw]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           code({ node, className, children, ref, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
@@ -60,11 +60,10 @@ const MarkdownRender = ({
           },
           blockquote({ children }) {
             return (
-              <blockquote className='p-2 mb-2 bg-slate-900 text-white rounded-sm'>
+              <blockquote className='p-2 mb-2 bg-slate-100 rounded-sm border-l-cyan-700 border-l-8'>
                 {children}
               </blockquote>
             );
-            // return <ObsidianCallout>{children}</ObsidianCallout>;
           },
           h1({ children }) {
             return <h1 className='text-4xl font-bold mt-6 mb-2'>{children}</h1>;
@@ -89,6 +88,9 @@ const MarkdownRender = ({
                 {children}
               </Link>
             );
+          },
+          p({ children }) {
+            return <p className='my-4'>{children}</p>;
           },
         }}
       >

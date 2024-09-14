@@ -43,7 +43,7 @@ export async function generateStaticParams() {
   // 경로를 동적 라우팅에 맞게 변환
   return flattenedTree.map((item: MarkdownFile) => {
     return {
-      slug: item.path.replace('3. Resource/', '').split('/'), // .md 확장자 제거 후 슬래시로 구분
+      slug: item.path.replace('3. Resource/', '').split('/'),
     };
   });
 }
@@ -62,10 +62,6 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
 
   return (
     <MaxWidthWrapper className=''>
-      {/* <div
-        className='prose max-w-full'
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
-      /> */}
       <MarkdownRender fileName={fileName} filePath={filePath}>
         {content}
       </MarkdownRender>
