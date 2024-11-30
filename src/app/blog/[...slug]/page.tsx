@@ -1,9 +1,6 @@
 import MarkdownRender from '@/components/blog/MarkdownRender';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import {
-  getFileContent,
-  getMarkdownFilesRecursively,
-} from '@/lib/markdown/getInfoFromGithub';
+import { getFileContent, getMarkdownFilesRecursively } from '@/lib/markdown/getInfoFromGithub';
 import MarkdownFile from '@/types/MarkdownFile';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -23,9 +20,7 @@ function flattenTree({ files }: { files: MarkdownFile[] }): MarkdownFile[] {
       /**
        * if file.type === 'dir' then file.subFolder is not undefined
        */
-      list = list.concat(
-        flattenTree({ files: file.subFolder as MarkdownFile[] })
-      );
+      list = list.concat(flattenTree({ files: file.subFolder as MarkdownFile[] }));
     }
   }
   return list;
@@ -35,11 +30,7 @@ export async function generateStaticParams() {
   const owner: string = process.env.GITHUB_OWNER as string;
   const repo: string = process.env.GITHUB_REPO as string;
 
-  const files: MarkdownFile[] = await getMarkdownFilesRecursively(
-    owner,
-    repo,
-    '3. Resource'
-  );
+  const files: MarkdownFile[] = await getMarkdownFilesRecursively(owner, repo, '3. Resource');
   const flattenedTree: MarkdownFile[] = flattenTree({ files });
   return flattenedTree.map((item: MarkdownFile) => {
     return {
@@ -68,6 +59,8 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
           </MarkdownRender>
         </MaxWidthWrapper>
       );
+    } else if (fileName.endsWith('.png')) {
+      console.log('png file not implemented');
     } else {
       const content: MarkdownFile[] = await response.json();
       return (
@@ -75,9 +68,7 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
           {content.map((item) => {
             return (
               <div key={item.path}>
-                <Link href={'/' + item.path.replace('3. Resource', 'blog')}>
-                  {`${item.name} : ${item.type}`}
-                </Link>
+                <Link href={'/' + item.path.replace('3. Resource', 'blog')}>{`${item.name} : ${item.type}`}</Link>
               </div>
             );
           })}

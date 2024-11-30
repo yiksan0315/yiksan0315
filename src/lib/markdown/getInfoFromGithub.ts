@@ -8,16 +8,13 @@ export async function getMarkdownFilesRecursively(
   const root = '3. Resource';
   const replacePath = 'blog';
 
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github.v3+json',
-        'Cache-Control': 'no-cache',
-      },
-    }
-  );
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?t=${Date.now()}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Cache-Control': 'no-cache',
+    },
+  });
 
   if (!response.ok) {
     throw new Error(`Error fetching file list: ${response.statusText}`);
@@ -37,11 +34,7 @@ export async function getMarkdownFilesRecursively(
         type: 'file',
       });
     } else if (item.type === 'dir' && item.name !== 'attachments') {
-      const subFolderFiles = await getMarkdownFilesRecursively(
-        owner,
-        repo,
-        item.path
-      );
+      const subFolderFiles = await getMarkdownFilesRecursively(owner, repo, item.path);
       dataLists.push({
         name: item.name,
         path: item.path,
@@ -55,16 +48,9 @@ export async function getMarkdownFilesRecursively(
   return dataLists;
 }
 
-export async function getFileContent(
-  owner: string,
-  repo: string,
-  path: string,
-  root?: string
-): Promise<Response> {
+export async function getFileContent(owner: string, repo: string, path: string, root?: string): Promise<Response> {
   const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${
-      root !== undefined ? root + '/' : ''
-    }${path}`,
+    `https://api.github.com/repos/${owner}/${repo}/contents/${root !== undefined ? root + '/' : ''}${path}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
