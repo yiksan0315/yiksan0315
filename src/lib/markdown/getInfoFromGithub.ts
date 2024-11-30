@@ -27,9 +27,11 @@ export async function getMarkdownFilesRecursively(
   let dataLists: MarkdownFile[] = [];
 
   for (const item of res) {
+    const ext = item.name.split('.').pop() as string;
+
     if (item.type === 'file' && item.name.endsWith('.md')) {
       dataLists.push({
-        name: item.name.replace('.md', ''),
+        name: item.name,
         path: item.path,
         url: item.path.replace(root, replacePath),
         type: 'file',
@@ -58,7 +60,7 @@ export async function getFileContent(
   repo: string,
   path: string,
   root?: string
-): Promise<string> {
+): Promise<Response> {
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${
       root !== undefined ? root + '/' : ''
@@ -76,6 +78,5 @@ export async function getFileContent(
     throw new Error(`Error fetching file content: ${response.statusText}`);
   }
 
-  const content = await response.text();
-  return content;
+  return response;
 }

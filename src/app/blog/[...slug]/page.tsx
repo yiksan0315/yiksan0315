@@ -5,6 +5,8 @@ import {
   getMarkdownFilesRecursively,
 } from '@/lib/markdown/getInfoFromGithub';
 import MarkdownFile from '@/types/MarkdownFile';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 interface MarkdownPageProps {
   params: {
@@ -39,8 +41,6 @@ export async function generateStaticParams() {
     '3. Resource'
   );
   const flattenedTree: MarkdownFile[] = flattenTree({ files });
-
-  // 경로를 동적 라우팅에 맞게 변환
   return flattenedTree.map((item: MarkdownFile) => {
     return {
       slug: item.path.replace('3. Resource/', '').split('/'),
@@ -54,17 +54,42 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
 
   // 경로를 이용하여 파일의 실제 경로 생성
   const filePath = params.slug.join('/');
-  const content = await getFileContent(owner, repo, filePath, '3. Resource');
   const fileName = filePath.split('/').pop() ?? '';
 
-  // 마크다운 파일을 HTML로 파싱
-  // const htmlContent = await parseMarkdown(content);
+  try {
+    const response = await getFileContent(owner, repo, filePath, '3. Resource');
 
-  return (
-    <MaxWidthWrapper className=''>
-      <MarkdownRender fileName={fileName} filePath={filePath}>
-        {content}
-      </MarkdownRender>
-    </MaxWidthWrapper>
-  );
+    if (fileName.endsWith('.md')) {
+      const content = await response.text();
+      return (
+        <MaxWidthWrapper className=''>
+          <MarkdownRender fileName={fileName} filePath={filePath}>
+            {content}
+          </MarkdownRender>
+        </MaxWidthWrapper>
+      );
+    } else {
+      const content: MarkdownFile[] = await response.json();
+      return (
+        <MaxWidthWrapper className=''>
+          {content.map((item) => {
+            return (
+              <div key={item.path}>
+                <Link href={'/' + item.path.replace('3. Resource', 'blog')}>
+                  {`${item.name} : ${item.type}`}
+                </Link>
+              </div>
+            );
+          })}
+        </MaxWidthWrapper>
+      );
+    }
+  } catch (error) {
+    /**
+     * if file not exist, treat as not found error
+     * : to be consided again
+     */
+    console.log(error);
+    notFound();
+  }
 }
