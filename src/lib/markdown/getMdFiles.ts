@@ -12,12 +12,13 @@ export async function getMarkdownFilesRecursively(
     headers: {
       Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
-      'Cache-Control': 'no-cache',
+      // 'Cache-Control': 'no-cache',
+      'User-Agent': 'request',
     },
   });
 
   if (!response.ok) {
-    throw new Error(`Error fetching file list: ${response.statusText}`);
+    throw new Error(`Error while fetching file list: ${response.statusText} and ${response.status}`);
   }
 
   const res: MarkdownFile[] = await response.json();
@@ -55,7 +56,8 @@ export async function getFileContent(owner: string, repo: string, path: string, 
       headers: {
         Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
         Accept: 'application/vnd.github.v3.raw',
-        'Cache-Control': 'no-cache',
+        // 'Cache-Control': 'no-cache',
+        'User-Agent': 'request',
       },
     }
   );
@@ -65,4 +67,24 @@ export async function getFileContent(owner: string, repo: string, path: string, 
   }
 
   return response;
+}
+
+import fs from 'fs';
+import path from 'path';
+
+const markdownDir = path.join(process.cwd(), 'markdown'); // 마크다운 파일 디렉토리
+
+export function getMarkdownFiles() {
+  const files = fs.readdirSync(markdownDir);
+
+  return files
+    .filter((file) => file.endsWith('.md'))
+    .map((file) => {
+      const filePath = path.join(markdownDir, file);
+      const content = fs.readFileSync(filePath, 'utf-8');
+      return {
+        filename: file,
+        content,
+      };
+    });
 }

@@ -1,6 +1,6 @@
 import MarkdownRender from '@/components/blog/MarkdownRender';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import { getFileContent, getMarkdownFilesRecursively } from '@/lib/markdown/getInfoFromGithub';
+import { getFileContent, getMarkdownFilesRecursively } from '@/lib/markdown/_getInfoFromGithub';
 import MarkdownFile from '@/types/MarkdownFile';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -43,7 +43,6 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
   const owner: string = process.env.GITHUB_OWNER as string;
   const repo: string = process.env.GITHUB_REPO as string;
 
-  // 경로를 이용하여 파일의 실제 경로 생성
   const filePath = params.slug.join('/');
   const fileName = filePath.split('/').pop() ?? '';
 
@@ -84,3 +83,6 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
     notFound();
   }
 }
+
+/** Rerender markdown file per 1 hour(=3600s) */
+export const revalidate = 3600;

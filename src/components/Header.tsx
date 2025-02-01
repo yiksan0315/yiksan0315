@@ -17,10 +17,10 @@ const Header = () => {
           <Link href='/'>Home</Link>
         </MarginedLi>
         <MarginedLi>
-          <Link href='/blog'>Blog</Link>
+          <Link href='/Study'>Study</Link>
         </MarginedLi>
         <MarginedLi>
-          <Link href='/portfolio'>portfolio</Link>
+          <Link href='/Portfolio'>Portfolio</Link>
         </MarginedLi>
       </ul>
     </div>
