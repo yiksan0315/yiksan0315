@@ -1,9 +1,9 @@
 import MarkdownRender from '@/components/blog/MarkdownRender';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import { getFileContent, getMarkdownFilesRecursively } from '@/lib/markdown/_getInfoFromGithub';
+import { getDirectoryStructure, getFileContent } from '@/lib/markdown/getMdFiles';
 import MarkdownFile from '@/types/MarkdownFile';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import path from 'path';
 
 interface MarkdownPageProps {
   params: {
@@ -11,65 +11,56 @@ interface MarkdownPageProps {
   };
 }
 
-function flattenTree({ files }: { files: MarkdownFile[] }): MarkdownFile[] {
-  let list: MarkdownFile[] = [];
+function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
+  let fileList: MarkdownFile[] = [];
   for (const file of files) {
-    if (file.type === 'file') {
-      list.push(file);
+    if (file.type === 'image' || file.type === 'mdFile') {
+      fileList.push(file);
     } else if (file.type === 'dir') {
-      /**
-       * if file.type === 'dir' then file.subFolder is not undefined
-       */
-      list = list.concat(flattenTree({ files: file.subFolder as MarkdownFile[] }));
+      fileList = fileList.concat(flattenTree(file.children as MarkdownFile[]));
     }
   }
-  return list;
+  return fileList;
 }
 
 export async function generateStaticParams() {
-  const owner: string = process.env.GITHUB_OWNER as string;
-  const repo: string = process.env.GITHUB_REPO as string;
-
-  const files: MarkdownFile[] = await getMarkdownFilesRecursively(owner, repo, '3. Resource');
-  const flattenedTree: MarkdownFile[] = flattenTree({ files });
+  const StudyFolder = process.env.MD_STUDY_DIR as string;
+  const files: MarkdownFile[] = await getDirectoryStructure(StudyFolder); // root
+  const flattenedTree: MarkdownFile[] = flattenTree(files);
   return flattenedTree.map((item: MarkdownFile) => {
     return {
-      slug: item.path.replace('3. Resource/', '').split('/'),
+      slug: item.path.replace(StudyFolder, '').split('/'),
     };
   });
 }
 
 export default async function MarkdownPage({ params }: MarkdownPageProps) {
-  const owner: string = process.env.GITHUB_OWNER as string;
-  const repo: string = process.env.GITHUB_REPO as string;
-
-  const filePath = params.slug.join('/');
-  const fileName = filePath.split('/').pop() ?? '';
+  const StudyFolder = process.env.MD_STUDY_DIR as string;
+  const url = params.slug.join('/');
+  const filePath = path.join(StudyFolder, url).replaceAll('%20', ' ');
+  const fileName = url.split('/').pop() ?? '';
 
   try {
-    const response = await getFileContent(owner, repo, filePath, '3. Resource');
+    const content = await getFileContent(filePath);
 
-    if (fileName.endsWith('.md')) {
-      const content = await response.text();
-      return (
-        <MaxWidthWrapper className=''>
-          <MarkdownRender fileName={fileName} filePath={filePath}>
-            {content}
-          </MarkdownRender>
-        </MaxWidthWrapper>
-      );
-    } else if (fileName.endsWith('.png')) {
-      console.log('png file not implemented');
+    if (typeof content === 'string') {
+      if (fileName.endsWith('.md')) {
+        return (
+          <MaxWidthWrapper className=''>
+            <MarkdownRender fileName={fileName} url={url}>
+              {content as string}
+            </MarkdownRender>
+          </MaxWidthWrapper>
+        );
+      } else if (fileName.endsWith('.png')) {
+        console.log('png file not implemented');
+        <div>image file not implemented yet</div>;
+      }
     } else {
-      const content: MarkdownFile[] = await response.json();
       return (
         <MaxWidthWrapper className=''>
           {content.map((item) => {
-            return (
-              <div key={item.path}>
-                <Link href={'/' + item.path.replace('3. Resource', 'blog')}>{`${item.name} : ${item.type}`}</Link>
-              </div>
-            );
+            return <div key={item}>{item}</div>;
           })}
         </MaxWidthWrapper>
       );

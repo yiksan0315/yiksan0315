@@ -1,90 +1,62 @@
 import MarkdownFile from '@/types/MarkdownFile';
-
-export async function getMarkdownFilesRecursively(
-  owner: string,
-  repo: string,
-  path: string = ''
-): Promise<MarkdownFile[]> {
-  const root = '3. Resource';
-  const replacePath = 'blog';
-
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?t=${Date.now()}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-      // 'Cache-Control': 'no-cache',
-      'User-Agent': 'request',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Error while fetching file list: ${response.statusText} and ${response.status}`);
-  }
-
-  const res: MarkdownFile[] = await response.json();
-  let dataLists: MarkdownFile[] = [];
-
-  for (const item of res) {
-    const ext = item.name.split('.').pop() as string;
-
-    if (item.type === 'file' && item.name.endsWith('.md')) {
-      dataLists.push({
-        name: item.name,
-        path: item.path,
-        url: item.path.replace(root, replacePath),
-        type: 'file',
-      });
-    } else if (item.type === 'dir' && item.name !== 'attachments') {
-      const subFolderFiles = await getMarkdownFilesRecursively(owner, repo, item.path);
-      dataLists.push({
-        name: item.name,
-        path: item.path,
-        url: item.path.replace(root, replacePath),
-        type: 'dir',
-        subFolder: subFolderFiles,
-      });
-    }
-  }
-
-  return dataLists;
-}
-
-export async function getFileContent(owner: string, repo: string, path: string, root?: string): Promise<Response> {
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${root !== undefined ? root + '/' : ''}${path}`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-        Accept: 'application/vnd.github.v3.raw',
-        // 'Cache-Control': 'no-cache',
-        'User-Agent': 'request',
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Error fetching file content: ${response.statusText}`);
-  }
-
-  return response;
-}
-
 import fs from 'fs';
 import path from 'path';
 
-const markdownDir = path.join(process.cwd(), 'markdown'); // 마크다운 파일 디렉토리
+function isMarkdownFile(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return ext === '.md';
+}
 
-export function getMarkdownFiles() {
-  const files = fs.readdirSync(markdownDir);
+const mdDir = path.join(process.cwd(), process.env.GITHUB_REPO as string);
 
-  return files
-    .filter((file) => file.endsWith('.md'))
-    .map((file) => {
-      const filePath = path.join(markdownDir, file);
-      const content = fs.readFileSync(filePath, 'utf-8');
-      return {
-        filename: file,
-        content,
-      };
-    });
+export async function getDirectoryStructure(objPath: string): Promise<MarkdownFile[]> {
+  /**
+    @ params objPath: path to object directory that you want to get the structure, except path to MD directory
+   */
+
+  const dirStruct: MarkdownFile[] = [];
+  const AbsPath = path.join(mdDir, objPath); // Absolute path to object directory in system
+  const items = fs.readdirSync(AbsPath);
+
+  for (const item of items) {
+    // item: file or directory name
+    // itemPath: releative path to item, from mdDir
+    const itemPath = path.join(objPath, item);
+
+    const stat = fs.statSync(path.join(AbsPath, item));
+
+    if (stat.isDirectory()) {
+      dirStruct.push({
+        name: item,
+        type: 'dir',
+        path: itemPath,
+        children: await getDirectoryStructure(itemPath),
+      });
+    } else if (isMarkdownFile(item)) {
+      dirStruct.push({
+        name: item,
+        type: 'mdFile',
+        path: itemPath,
+      });
+    } else {
+      dirStruct.push({
+        name: item,
+        type: 'image',
+        path: itemPath,
+      });
+    }
+  }
+
+  return dirStruct;
+}
+
+export async function getFileContent(objPath: string): Promise<string | string[]> {
+  const absPath = path.join(mdDir, objPath);
+  const stats = fs.statSync(absPath);
+  if (stats.isDirectory()) {
+    return fs.readdirSync(absPath);
+  } else {
+    const content = fs.readFileSync(absPath, 'utf-8');
+    return content;
+  }
 }

@@ -12,26 +12,19 @@ import remarkMath from 'remark-math';
 interface MarkdownViewProps {
   children: string;
   fileName: string;
-  filePath: string;
+  url: string;
 }
 
-const MarkdownRender = ({
-  children,
-  fileName,
-  filePath,
-}: MarkdownViewProps) => {
+const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
   const { data, content } = matter(children);
 
-  const filePathNew = filePath
-    .replaceAll('/', '>')
-    .replaceAll('%20', ' ')
-    .replace('.md', '');
+  const filePathNew = url.replaceAll('/', '>').replaceAll('%20', ' ').replace('.md', '');
   const fileNameNew = fileName.replaceAll('%20', ' ').replace('.md', '');
   return (
     <div className=''>
       <div className='flex flex-col'>
         <h1 className='font-black my-4 text-5xl'>{fileNameNew}</h1>
-        <Link href={`/blog/${filePath}`}>{filePathNew}</Link>
+        <Link href={`/Study/${url}`}>{filePathNew}</Link>
         <div className='flex flex-col my-2'>
           <span className='font-bold '>created : {data.created}</span>
           <span className='font-bold '>updated : {data.updated}</span>
@@ -75,9 +68,7 @@ const MarkdownRender = ({
             return <h2 className='text-3xl font-bold mt-6 mb-2'>{children}</h2>;
           },
           strong({ children }) {
-            return (
-              <strong className='font-black text-cyan-500'>{children}</strong>
-            );
+            return <strong className='font-black text-cyan-500'>{children}</strong>;
           },
           li({ children }) {
             return <li className='list-disc ml-4'>{children}</li>;

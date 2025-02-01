@@ -35,6 +35,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           console.error(`Git clone error: ${error.message}`);
           return;
         }
+        console.log(`\nClone Message ================== \n${stdout}\nClone Message End ==================\n`);
         console.log('Markdown repository cloned successfully.');
       });
     } else {
@@ -44,9 +45,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           console.error(`Git pull error in markdown repo: ${error.message}`);
           return;
         }
+        console.log(`\nPull Message ================== \n${stdout}\nPull Message End ==================\n`);
         console.log('Markdown repository updated.');
       });
     }
+
+    // 여기에 revalidate 하는 거 추가해야 함
 
     return NextResponse.json({ message: 'Rebuilding site...' });
   } catch (error) {

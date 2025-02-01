@@ -1,10 +1,6 @@
 export default interface MarkdownFile {
-  path: string;
   name: string;
-  type: 'file' | 'dir';
-  url: string;
-  /**
-   * Only for directories
-   */
-  subFolder?: MarkdownFile[];
+  path: string;
+  type: 'image' | 'mdFile' | 'dir';
+  children?: MarkdownFile[];
 }
