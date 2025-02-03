@@ -1,26 +1,26 @@
 import MarkdownRender from '@/components/blog/MarkdownRender';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import { getDirectoryStructure, getFileContent } from '@/lib/markdown/getMdFiles';
+import { getDirectoryStructure, getFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
 import MarkdownFile from '@/types/MarkdownFile';
+import PageProps from '@/types/PageProps';
 import { notFound } from 'next/navigation';
 import path from 'path';
-
-interface MarkdownPageProps {
-  params: {
-    slug: string[];
-  };
-}
 
 function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
   let fileList: MarkdownFile[] = [];
   for (const file of files) {
-    if (file.type === 'image' || file.type === 'mdFile') {
-      fileList.push(file);
-    } else if (file.type === 'dir') {
+    fileList.push(file);
+    if (file.type === 'dir') {
       fileList = fileList.concat(flattenTree(file.children as MarkdownFile[]));
     }
   }
   return fileList;
+}
+function transformImageLinks(markdown: string, baseUrl: string): string {
+  return markdown.replace(/!\[[^\]]*\]\(([^)]+)\)/g, (match, p1) => {
+    const newUrl = `${baseUrl}/${p1}`;
+    return match.replace(p1, newUrl);
+  });
 }
 
 export async function generateStaticParams() {
@@ -28,38 +28,41 @@ export async function generateStaticParams() {
   const files: MarkdownFile[] = await getDirectoryStructure(StudyFolder); // root
   const flattenedTree: MarkdownFile[] = flattenTree(files);
   return flattenedTree.map((item: MarkdownFile) => {
+    const slug_path = item.path.replace(StudyFolder + path.sep, '').split('/');
     return {
-      slug: item.path.replace(StudyFolder, '').split('/'),
+      slug: slug_path,
     };
   });
 }
 
-export default async function MarkdownPage({ params }: MarkdownPageProps) {
+export default async function MarkdownPage({ params }: PageProps) {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const url = params.slug.join('/');
-  const filePath = path.join(StudyFolder, url).replaceAll('%20', ' ');
-  const fileName = url.split('/').pop() ?? '';
+  const filePath = decodeURIComponent(path.join(StudyFolder, url));
+  const fileName = filePath.split('/').pop() ?? '';
 
   try {
     const content = await getFileContent(filePath);
 
     if (typeof content === 'string') {
-      if (fileName.endsWith('.md')) {
+      if (isMarkdownFile(fileName)) {
+        const urlToSameFolder = url.split('/').slice(0, -1).join('/');
+        const newContent = transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`);
         return (
           <MaxWidthWrapper className=''>
             <MarkdownRender fileName={fileName} url={url}>
-              {content as string}
+              {newContent}
             </MarkdownRender>
           </MaxWidthWrapper>
         );
-      } else if (fileName.endsWith('.png')) {
-        console.log('png file not implemented');
-        <div>image file not implemented yet</div>;
+      } else {
+        throw new Error('Not Found Error : Not a markdown file');
       }
     } else {
+      // content is string[] : if directory
       return (
         <MaxWidthWrapper className=''>
-          {content.map((item) => {
+          {(content as string[]).map((item) => {
             return <div key={item}>{item}</div>;
           })}
         </MaxWidthWrapper>
@@ -68,12 +71,9 @@ export default async function MarkdownPage({ params }: MarkdownPageProps) {
   } catch (error) {
     /**
      * if file not exist, treat as not found error
-     * : to be consided again
+     * : to be considered again
      */
     console.log(error);
     notFound();
   }
 }
-
-/** Rerender markdown file per 1 hour(=3600s) */
-export const revalidate = 3600;

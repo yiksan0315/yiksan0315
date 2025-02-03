@@ -2,7 +2,7 @@ import MarkdownFile from '@/types/MarkdownFile';
 import fs from 'fs';
 import path from 'path';
 
-function isMarkdownFile(filePath: string): boolean {
+export function isMarkdownFile(filePath: string): boolean {
   const ext = path.extname(filePath).toLowerCase();
   return ext === '.md';
 }
@@ -16,47 +16,51 @@ export async function getDirectoryStructure(objPath: string): Promise<MarkdownFi
 
   const dirStruct: MarkdownFile[] = [];
   const AbsPath = path.join(mdDir, objPath); // Absolute path to object directory in system
-  const items = fs.readdirSync(AbsPath);
+  try {
+    const items = fs.readdirSync(AbsPath);
 
-  for (const item of items) {
-    // item: file or directory name
-    // itemPath: releative path to item, from mdDir
-    const itemPath = path.join(objPath, item);
+    for (const item of items) {
+      // item: file or directory name
+      // itemPath: releative path to item, from mdDir
+      const itemPath = path.join(objPath, item);
 
-    const stat = fs.statSync(path.join(AbsPath, item));
+      const stat = fs.statSync(path.join(AbsPath, item));
 
-    if (stat.isDirectory()) {
-      dirStruct.push({
-        name: item,
-        type: 'dir',
-        path: itemPath,
-        children: await getDirectoryStructure(itemPath),
-      });
-    } else if (isMarkdownFile(item)) {
-      dirStruct.push({
-        name: item,
-        type: 'mdFile',
-        path: itemPath,
-      });
-    } else {
-      dirStruct.push({
-        name: item,
-        type: 'image',
-        path: itemPath,
-      });
+      if (stat.isDirectory()) {
+        if (item !== 'attachments') {
+          dirStruct.push({
+            name: item,
+            type: 'dir',
+            path: itemPath,
+            children: await getDirectoryStructure(itemPath),
+          });
+        }
+      } else if (isMarkdownFile(item)) {
+        dirStruct.push({
+          name: item,
+          type: 'file',
+          path: itemPath,
+        });
+      }
     }
+  } catch (err) {
+    // if directory is empty, return empty array
+    return [];
   }
-
   return dirStruct;
 }
 
 export async function getFileContent(objPath: string): Promise<string | string[]> {
   const absPath = path.join(mdDir, objPath);
-  const stats = fs.statSync(absPath);
-  if (stats.isDirectory()) {
-    return fs.readdirSync(absPath);
-  } else {
-    const content = fs.readFileSync(absPath, 'utf-8');
-    return content;
+  try {
+    const stats = fs.statSync(absPath);
+    if (stats.isDirectory()) {
+      return fs.readdirSync(absPath);
+    } else {
+      const content = fs.readFileSync(absPath, 'utf-8');
+      return content;
+    }
+  } catch (err) {
+    throw Error(err as string);
   }
 }

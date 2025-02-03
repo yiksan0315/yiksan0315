@@ -35,27 +35,24 @@ const TempComponent = ({
 const NavFolder = async () => {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const data: MarkdownFile[] = await getDirectoryStructure(StudyFolder);
-  const imageFolder = 'attachments';
 
   const renderTree = (contents: MarkdownFile[]) => {
     return contents.map((item) => {
-      if (item.name !== imageFolder) {
-        if (item.type === 'dir') {
-          // 폴더인 경우 재귀적으로 하위 폴더와 파일들을 렌더링
-          return (
-            <TempComponent key={item.path} name={item.name} dir>
-              <ul className='border-black border-2'>
-                {renderTree(
-                  (item.children as MarkdownFile[]).filter(
-                    (content) => content.path.startsWith(item.path) && content.path !== item.path
-                  )
-                )}
-              </ul>
-            </TempComponent>
-          );
-        } else {
-          return <TempComponent key={item.path} name={item.name} path={item.path.replace(StudyFolder, 'Study')} />;
-        }
+      if (item.type === 'dir') {
+        // 폴더인 경우 재귀적으로 하위 폴더와 파일들을 렌더링
+        return (
+          <TempComponent key={item.path} name={item.name} dir>
+            <ul className='border-black border-2'>
+              {renderTree(
+                (item.children as MarkdownFile[]).filter(
+                  (content) => content.path.startsWith(item.path) && content.path !== item.path
+                )
+              )}
+            </ul>
+          </TempComponent>
+        );
+      } else {
+        return <TempComponent key={item.path} name={item.name} path={item.path.replace(StudyFolder, 'Study')} />;
       }
     });
   };

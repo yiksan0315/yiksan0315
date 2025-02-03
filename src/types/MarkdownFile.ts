@@ -1,6 +1,6 @@
 export default interface MarkdownFile {
   name: string;
   path: string;
-  type: 'image' | 'mdFile' | 'dir';
+  type: 'file' | 'dir';
   children?: MarkdownFile[];
 }
