@@ -3,7 +3,6 @@ import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import { getDirectoryStructure, getFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
-import { notFound } from 'next/navigation';
 import path from 'path';
 
 function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
@@ -74,6 +73,10 @@ export default async function MarkdownPage({ params }: PageProps) {
      * : to be considered again
      */
     console.log(error);
-    notFound();
+    // notFound();
+
+    return <MaxWidthWrapper className=''>not found error</MaxWidthWrapper>;
   }
 }
+
+export const revalidate = 0;

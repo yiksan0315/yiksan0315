@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import fs from 'fs';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
@@ -17,44 +18,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     /** Check modeified files : only markdown or images(png) */
-    /**
 
-    const body = await req.json();
+    // const body = await req.json();
 
-    const extensions = ['.md', '.png'];
-    const modifiedFiles: string[] = body.commits.flatMap((commit: any) => commit.modified || []);
-    if (!modifiedFiles.some((file) => extensions.some((ext) => file.endsWith(ext)))) {
-      return NextResponse.json({ message: 'No Markdown changes detected' });
-    }
-    */
+    // const extensions = ['.md', '.png'];
+    // const modifiedFiles: string[] = body.commits.flatMap((commit: any) => commit.modified || []);
+    // if (!modifiedFiles.some((file) => extensions.some((ext) => file.endsWith(ext)))) {
+    //   return NextResponse.json({ message: 'No Markdown changes detected' });
+    // }
 
-    if (!fs.existsSync(markdownDir)) {
-      console.log('Markdown repository not found locally. Cloning...');
-      exec(`git clone ${markdownRepoUrl} ${markdownDir}`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Git clone error: ${error.message}`);
-          return;
-        }
-        console.log(`\nClone Message ================== \n${stdout}\nClone Message End ==================\n`);
-        console.log('Markdown repository cloned successfully.');
-      });
-    } else {
-      console.log('Markdown repository already exists. Pulling latest changes...');
-      exec(`cd ${markdownDir} && git pull`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Git pull error in markdown repo: ${error.message}`);
-          return;
-        }
-        console.log(`\nPull Message ================== \n${stdout}\nPull Message End ==================\n`);
-        console.log('Markdown repository updated.');
-      });
-    }
-
-    // 여기에 revalidate 하는 거 추가해야 함
+    await new Promise<void>((resolve, reject) => {
+      if (!fs.existsSync(markdownDir)) {
+        console.log('Markdown repository not found locally. Cloning...');
+        exec(`git clone ${markdownRepoUrl} ${markdownDir}`, (error, stdout, stderr) => {
+          if (error) {
+            reject(new Error(`Git clone error: ${error.message}`));
+          }
+          console.log('Markdown repository cloned successfully.');
+          revalidatePath('/Study', 'page');
+          resolve();
+        });
+      } else {
+        console.log('Markdown repository already exists. Pulling latest changes...');
+        exec(`cd ${markdownDir} && git pull`, (error, stdout, stderr) => {
+          if (error) {
+            reject(new Error(`Git pill error in markdown repo: ${error.message}`));
+          }
+          console.log('Markdown repository updated.');
+          revalidatePath('/Study', 'page');
+          resolve();
+        });
+      }
+    });
 
     return NextResponse.json({ message: 'Rebuilding site...' });
   } catch (error) {
-    console.error('Webhook Error:', error);
+    console.log('Webhook Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
