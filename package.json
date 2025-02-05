@@ -13,6 +13,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "extract-zip": "^2.0.1",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.10.0",
     "katex": "^0.16.11",
@@ -20,6 +21,7 @@
     "marked-highlight": "^2.1.4",
     "next": "14.2.5",
     "obsidian-callouts-markdown": "^1.0.5",
+    "octokit": "^4.1.0",
     "prismjs": "^1.29.0",
     "react": "^18",
     "react-dom": "^18",
@@ -34,7 +36,8 @@
     "remark-html": "^16.0.1",
     "remark-math": "^6.0.0",
     "tailwind-merge": "^2.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "unzip": "^0.1.11"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",

@@ -72,11 +72,11 @@ export default async function MarkdownPage({ params }: PageProps) {
      * if file not exist, treat as not found error
      * : to be considered again
      */
-    console.log(error);
+    // console.log(error);
     // notFound();
 
     return <MaxWidthWrapper className=''>not found error</MaxWidthWrapper>;
   }
 }
 
-export const revalidate = 0;
+export const revalidate = 60; // 1 minute

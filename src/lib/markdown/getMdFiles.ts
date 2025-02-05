@@ -61,6 +61,6 @@ export async function getFileContent(objPath: string): Promise<string | string[]
       return content;
     }
   } catch (err) {
-    throw Error(err as string);
+    throw new Error(err as string);
   }
 }
