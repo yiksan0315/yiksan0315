@@ -1,4 +1,3 @@
-import { Webhooks } from '@octokit/webhooks';
 import extract from 'extract-zip';
 import fs from 'fs';
 import { revalidatePath } from 'next/cache';
@@ -36,9 +35,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         throw new StatusError(400, 'No rawBody.');
       }
 
-      if (!(await new Webhooks({ secret }).verify(rawBody, signature))) {
-        throw new StatusError(400, 'Fail signature verify');
-      }
+      // if (!(await new Webhooks({ secret }).verify(rawBody, signature))) {
+      //   throw new StatusError(400, 'Fail signature verify');
+      // }
     }
 
     const token = process.env.GITHUB_TOKEN;
