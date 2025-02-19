@@ -1,5 +1,4 @@
 import MarkdownFile from '@/types/MarkdownFile';
-import fs from 'fs';
 import path from 'path';
 
 export function isMarkdownFile(filePath: string): boolean {
@@ -7,60 +6,72 @@ export function isMarkdownFile(filePath: string): boolean {
   return ext === '.md';
 }
 
-const mdDir = path.join(process.cwd(), process.env.GITHUB_REPO as string);
-
-export async function getDirectoryStructure(objPath: string): Promise<MarkdownFile[]> {
-  /**
-    @ params objPath: path to object directory that you want to get the structure, except path to MD directory
-   */
-
-  const dirStruct: MarkdownFile[] = [];
-  const AbsPath = path.join(mdDir, objPath); // Absolute path to object directory in system
-  try {
-    const items = fs.readdirSync(AbsPath);
-
-    for (const item of items) {
-      // item: file or directory name
-      // itemPath: releative path to item, from mdDir
-      const itemPath = path.join(objPath, item);
-
-      const stat = fs.statSync(path.join(AbsPath, item));
-
-      if (stat.isDirectory()) {
-        if (item !== 'attachments') {
-          dirStruct.push({
-            name: item,
-            type: 'dir',
-            path: itemPath,
-            children: await getDirectoryStructure(itemPath),
-          });
-        }
-      } else if (isMarkdownFile(item)) {
-        dirStruct.push({
-          name: item,
-          type: 'file',
-          path: itemPath,
-        });
-      }
-    }
-  } catch (err) {
-    // if directory is empty, return empty array
-    return [];
+/**
+    get markdown file content.
+    @ params filePath: path to markdown file, start with directory name that which makrdown file is in
+    */
+export async function getMdFileContent(filePath: string): Promise<string> {
+  const apiUrl = process.env.MARKDOWN_API;
+  const token = process.env.GITHUB_TOKEN;
+  if (!apiUrl || !token) {
+    throw new Error('environment is not defined');
   }
-  return dirStruct;
+
+  const absUrl = apiUrl + '/' + filePath;
+  const response = await fetch(absUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch markdown file');
+  }
+
+  const content = await response.json();
+  const text = Buffer.from(content.content, 'base64').toString('utf-8');
+  return text;
 }
 
-export async function getFileContent(objPath: string): Promise<string | string[]> {
-  const absPath = path.join(mdDir, objPath);
-  try {
-    const stats = fs.statSync(absPath);
-    if (stats.isDirectory()) {
-      return fs.readdirSync(absPath);
-    } else {
-      const content = fs.readFileSync(absPath, 'utf-8');
-      return content;
-    }
-  } catch (err) {
-    throw new Error(err as string);
+/**
+    get directory structure of markdown files, except image file and image file folder named 'attachments'.
+    if recursive = true then get all files in the folder.
+*/
+export async function getFolderInfo(folderPath: string, recursive: boolean = false): Promise<MarkdownFile[]> {
+  const apiUrl = process.env.MARKDOWN_API;
+  const token = process.env.GITHUB_TOKEN;
+  const targetDir = process.env.MD_STUDY_DIR;
+  if (!apiUrl || !token || !targetDir) {
+    throw new Error('environment is not defined');
   }
+
+  const absUrl = apiUrl + '/' + folderPath;
+  const response = await fetch(absUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch folder info : ${response.statusText}`);
+  }
+
+  const contents = await response.json();
+  const folderInfo: MarkdownFile[] = await Promise.all(
+    contents
+      .filter((content: any) => content.name !== 'attachments')
+      .map(async (content: any) => {
+        return {
+          name: content.name,
+          path: content.path,
+          url: content.path.replace(targetDir, 'Study'),
+          type: content.type,
+          children: recursive && content.type === 'dir' ? await getFolderInfo(content.path, true) : undefined,
+        };
+      })
+  );
+
+  return folderInfo;
 }

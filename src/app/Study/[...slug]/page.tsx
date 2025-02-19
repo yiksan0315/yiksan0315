@@ -1,9 +1,8 @@
-import MarkdownRender from '@/components/blog/MarkdownRender';
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import { getDirectoryStructure, getFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
+import MarkdownRender from '@/components/Study/MarkdownRender';
+import { getFolderInfo, getMdFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
-import path from 'path';
 
 function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
   let fileList: MarkdownFile[] = [];
@@ -15,6 +14,7 @@ function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
   }
   return fileList;
 }
+
 function transformImageLinks(markdown: string, baseUrl: string): string {
   return markdown.replace(/!\[[^\]]*\]\(([^)]+)\)/g, (match, p1) => {
     const newUrl = `${baseUrl}/${p1}`;
@@ -24,12 +24,13 @@ function transformImageLinks(markdown: string, baseUrl: string): string {
 
 export async function generateStaticParams() {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
-  const files: MarkdownFile[] = await getDirectoryStructure(StudyFolder); // root
+  const files: MarkdownFile[] = await getFolderInfo(StudyFolder, true); // root
   const flattenedTree: MarkdownFile[] = flattenTree(files);
   return flattenedTree.map((item: MarkdownFile) => {
-    const slug_path = item.path.replace(StudyFolder + path.sep, '').split('/');
+    // slug: path to file, split by '/' : without 'Study' path
+    const slug_url = item.url.replace('Study' + '/', '').split('/');
     return {
-      slug: slug_path,
+      slug: slug_url,
     };
   });
 }
@@ -37,32 +38,28 @@ export async function generateStaticParams() {
 export default async function MarkdownPage({ params }: PageProps) {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const url = params.slug.join('/');
-  const filePath = decodeURIComponent(path.join(StudyFolder, url));
-  const fileName = filePath.split('/').pop() ?? '';
+  const fileUrl = decodeURIComponent(StudyFolder + '/' + url);
+  const fileName = fileUrl.split('/').pop() ?? ''; // last element of path : name
 
   try {
-    const content = await getFileContent(filePath);
-
-    if (typeof content === 'string') {
-      if (isMarkdownFile(fileName)) {
-        const urlToSameFolder = url.split('/').slice(0, -1).join('/');
-        const newContent = transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`);
-        return (
-          <MaxWidthWrapper className=''>
-            <MarkdownRender fileName={fileName} url={url}>
-              {newContent}
-            </MarkdownRender>
-          </MaxWidthWrapper>
-        );
-      } else {
-        throw new Error('Not Found Error : Not a markdown file');
-      }
+    if (isMarkdownFile(fileName)) {
+      const content = await getMdFileContent(fileUrl);
+      const urlToSameFolder = url.split('/').slice(0, -1).join('/');
+      const newContent = transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`);
+      return (
+        <MaxWidthWrapper>
+          <MarkdownRender fileName={fileName} url={url}>
+            {newContent}
+          </MarkdownRender>
+        </MaxWidthWrapper>
+      );
     } else {
-      // content is string[] : if directory
+      // if folder
+      const folderInfo = await getFolderInfo(fileUrl);
       return (
         <MaxWidthWrapper className=''>
-          {(content as string[]).map((item) => {
-            return <div key={item}>{item}</div>;
+          {folderInfo.map((item) => {
+            return <div key={item.url}>{item.name}</div>;
           })}
         </MaxWidthWrapper>
       );
@@ -72,7 +69,7 @@ export default async function MarkdownPage({ params }: PageProps) {
      * if file not exist, treat as not found error
      * : to be considered again
      */
-    // console.log(error);
+    console.error(error);
     // notFound();
 
     return <MaxWidthWrapper className=''>not found error</MaxWidthWrapper>;

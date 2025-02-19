@@ -4,11 +4,12 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import rehypeKatex from 'rehype-katex';
 // import rehypeMathjax from 'rehype-mathjax';
+import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import remarkParse from 'remark-parse';
 
 interface MarkdownViewProps {
   children: string;
@@ -39,7 +40,7 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
 
   const filePath = decodeURIComponent(url);
   return (
-    <div className=''>
+    <div className='w-[876px] mx-auto bg-gray-50 p-10 font-RIDIFont'>
       <div className='flex flex-col'>
         <p className='font-black my-4 text-5xl'>{fileName}</p>
         <Link href={`/Study/${url}`}>{filePath}</Link>
@@ -48,11 +49,13 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
           <span className='font-bold '>updated : {updatedDate}</span>
         </div>
       </div>
-      <hr></hr>
+
+      <hr />
+
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeRaw, rehypeKatex]}
+        remarkPlugins={[remarkParse, remarkGfm, remarkMath]}
         // rehypePlugins={[rehypeRaw, rehypeMathjax]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           code({ node, className, children, ref, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
@@ -77,14 +80,26 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
               </blockquote>
             );
           },
+          // blockquote: ({ children }) => {
+          //   return <ObsidianCallout>{children}</ObsidianCallout>; // 딱히 좋은 방법은 아닌 듯.
+          // },
           h1({ children }) {
-            return <h1 className='text-4xl font-bold mt-6 mb-2'>{children}</h1>;
+            return <h1 className='text-4xl font-extrabold mt-6 mb-2'>{children}</h1>;
           },
           h2({ children }) {
-            return <h2 className='text-3xl font-bold mt-6 mb-2'>{children}</h2>;
+            return <h2 className='text-3xl font-bold mt-6 mb-2 text-red-400'>{children}</h2>;
           },
           h3({ children }) {
             return <h3 className='text-2xl font-bold mt-6 mb-2'>{children}</h3>;
+          },
+          h4({ children }) {
+            return <h4 className='text-xl font-bold mt-6 mb-2'>{children}</h4>;
+          },
+          h5({ children }) {
+            return <h5 className='text-lg font-bold mt-6 mb-2'>{children}</h5>;
+          },
+          h6({ children }) {
+            return <h6 className='text-base font-bold mt-6 mb-2'>{children}</h6>;
           },
           strong({ children }) {
             return <strong className='font-black text-cyan-500'>{children}</strong>;

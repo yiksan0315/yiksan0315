@@ -1,4 +1,4 @@
-import NavFolder from '@/components/blog/NavFolder';
+import NavFolder from '@/components/Study/NavFolder';
 import '@styles/globals.css';
 import type { Metadata } from 'next';
 
