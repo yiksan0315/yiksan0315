@@ -16,13 +16,6 @@ function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
   return fileList;
 }
 
-function transformImageLinks(markdown: string, baseUrl: string): string {
-  return markdown.replace(/!\[[^\]]*\]\(([^)]+)\)/g, (match, p1) => {
-    const newUrl = `${baseUrl}/${p1}`;
-    return match.replace(p1, newUrl);
-  });
-}
-
 export async function generateStaticParams() {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const files: MarkdownFile[] = await getFolderInfo(StudyFolder, true); // root
@@ -40,17 +33,15 @@ export default async function MarkdownPage({ params }: PageProps) {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const url = params.slug.join('/');
   const fileUrl = decodeURIComponent(StudyFolder + '/' + url);
-  const fileName = fileUrl.split('/').pop() ?? ''; // last element of path : name
+  const fileName = fileUrl.split('/').pop() as string; // last element of path : name
 
   try {
     if (isMarkdownFile(fileName)) {
       const content = await getMdFileContent(fileUrl);
-      const urlToSameFolder = url.split('/').slice(0, -1).join('/');
-      const newContent = transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`);
       return (
-        <MaxWidthWrapper>
+        <MaxWidthWrapper className='bg-slate-100'>
           <MarkdownRender fileName={fileName} url={url}>
-            {newContent}
+            {content}
           </MarkdownRender>
         </MaxWidthWrapper>
       );
@@ -72,9 +63,9 @@ export default async function MarkdownPage({ params }: PageProps) {
      */
     console.error(error);
     // notFound();
-
     return <MaxWidthWrapper className=''>404 not found error</MaxWidthWrapper>;
   }
 }
 
-export const revalidate = 60; // 1 minute
+export const revalidate = 3600; // 1hour
+// export const revalidate = 0; // for test

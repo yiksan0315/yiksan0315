@@ -14,12 +14,12 @@ const UrlLinkComponent = ({ children }: { children: string }) => {
     <div className='mt-4 mb-2'>
       {slugList.map((item, index) => {
         return (
-          <>
-            <Link key={item.url} href={item.url} className='text-violet-500 underline font-bold text-lg'>
+          <div key={item.url}>
+            <Link href={item.url} className='text-violet-500 underline font-bold text-lg'>
               {item.label}
             </Link>
             <span>{index !== slugList.length - 1 ? ' / ' : ''}</span>
-          </>
+          </div>
         );
       })}
     </div>
