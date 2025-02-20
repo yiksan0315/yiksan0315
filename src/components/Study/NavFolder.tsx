@@ -40,14 +40,7 @@ const NavFolder = async () => {
         // 폴더인 경우 재귀적으로 하위 폴더와 파일들을 렌더링
         return (
           <TempComponent key={item.path} name={item.name} url={item.url} dir>
-            <ul className='border-black border-2'>
-              {renderTree(
-                (item.children as MarkdownFile[]).filter(
-                  // 이 코드가 왜 필요하더라?
-                  (content) => content.path.startsWith(item.path) && content.path !== item.path
-                )
-              )}
-            </ul>
+            <ul className='border-black border-2'>{renderTree(item.children as MarkdownFile[])}</ul>
           </TempComponent>
         );
       } else {

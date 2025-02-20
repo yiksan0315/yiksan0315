@@ -10,6 +10,7 @@ import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
+import UrlLinkComponent from '../../components/Study/UrlLinkComponent';
 
 interface MarkdownViewProps {
   children: string;
@@ -33,18 +34,18 @@ function formatDate(dateInput: string | Date | undefined): string {
   }).format(date);
 }
 
-const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
+const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
   const { data, content } = matter(children);
   const createdDate = formatDate(data.created);
   const updatedDate = formatDate(data.created);
 
-  const filePath = decodeURIComponent(url);
+  const fileUrl = decodeURIComponent(url);
   return (
     <div className='w-[876px] mx-auto bg-gray-50 p-10 font-RIDIFont'>
       <div className='flex flex-col'>
-        <p className='font-black my-4 text-5xl'>{fileName}</p>
-        <Link href={`/Study/${url}`}>{filePath}</Link>
-        <div className='flex flex-col my-2'>
+        <p className='font-black text-5xl'>{fileName.split('.')[0]}</p>
+        <UrlLinkComponent>{fileUrl}</UrlLinkComponent>
+        <div className='flex flex-col '>
           <span className='font-bold '>created : {createdDate}</span>
           <span className='font-bold '>updated : {updatedDate}</span>
         </div>
@@ -80,9 +81,6 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
               </blockquote>
             );
           },
-          // blockquote: ({ children }) => {
-          //   return <ObsidianCallout>{children}</ObsidianCallout>; // 딱히 좋은 방법은 아닌 듯.
-          // },
           h1({ children }) {
             return <h1 className='text-4xl font-extrabold mt-6 mb-2'>{children}</h1>;
           },
@@ -109,7 +107,7 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
           },
           a({ children, href }) {
             return (
-              <Link href={href as string} className='text-cyan-900 underline'>
+              <Link href={href as string} className='text-violet-500 underline'>
                 {children}
               </Link>
             );
@@ -125,4 +123,4 @@ const MarkdownRender = ({ children, fileName, url }: MarkdownViewProps) => {
   );
 };
 
-export default MarkdownRender;
+export default MarkdownPage;

@@ -1,7 +1,6 @@
+import StatusError from '@/lib/api/statusError';
 import PageProps from '@/types/PageProps';
-import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
 
 const mimeTypes: Record<string, string> = {
   png: 'image/png',
@@ -12,27 +11,52 @@ const mimeTypes: Record<string, string> = {
 };
 
 export async function GET(request: NextRequest, { params }: PageProps) {
-  const mdDir = path.join(process.cwd(), process.env.GITHUB_REPO as string, process.env.MD_STUDY_DIR as string);
-  const slugPath = params.slug.join('/');
-  const imagePath = path.join(mdDir, slugPath);
+  const apiUrl = process.env.MARKDOWN_API;
+  const token = process.env.GITHUB_TOKEN;
+  const studyFolder = process.env.MD_STUDY_DIR;
 
   try {
-    const imageBuffer = await fs.readFile(imagePath);
+    if (!apiUrl || !token || !studyFolder) {
+      throw new StatusError(500, 'environment is not defined');
+    }
 
-    const ext = path.extname(imagePath).toLowerCase().slice(1);
+    const slugPath = params.slug.join('/');
+    const absUrl = apiUrl + '/' + studyFolder + '/' + slugPath;
+    const metadataResponse = await fetch(absUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
 
-    const headers = new Headers();
-    headers.set('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+    if (!metadataResponse.ok) {
+      throw new StatusError(metadataResponse.status, 'Failed to fetch image metadata.');
+    }
 
-    return new NextResponse(imageBuffer, {
-      status: 200,
-      headers,
+    const metadata = await metadataResponse.json();
+
+    if (!metadata.download_url) {
+      throw new StatusError(404, 'Image download URL not found.');
+    }
+
+    const imageResponse = await fetch(metadata.download_url);
+    if (!imageResponse.ok) {
+      throw new StatusError(imageResponse.status, 'Failed to fetch image.');
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+
+    return new Response(imageBuffer, {
+      headers: {
+        'Content-Type': metadata.type || 'image/png',
+        'Content-Length': imageBuffer.byteLength.toString(),
+        'Cache-Control': 'public, max-age=3600',
+      },
     });
   } catch (error) {
-    console.log(`image error: ${error}`);
-    return new NextResponse(null, { status: 404 });
+    if (error instanceof StatusError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    return NextResponse.json({ error: `Internal Server Error: ${error}` }, { status: 500 });
   }
-  // 이미지 처리가 문제 ==> 1. 실제로 blob storage를 사용하거나 2. 이미지를 base64로 변환해서 처리하거나 3. 이미지에 대한 api를 아예 따로 만들거나 // 4. 그냥 마찬가지로 github api 받아오면 될 듯?
 }
-
-///home/yiksan0315/user/projects/yiksan0315/memo/3. Resource/AI/Deep Learning/Activation Function/attachments/img_ELU-1.png

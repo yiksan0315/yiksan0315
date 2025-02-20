@@ -1,12 +1,6 @@
+import StatusError from '@/lib/api/statusError';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
-
-class StatusError extends Error {
-  constructor(public readonly status: number, message: string) {
-    super(message);
-    this.name = 'Status Error';
-  }
-}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const isDevelopment = process.env.NODE_ENV === 'development';

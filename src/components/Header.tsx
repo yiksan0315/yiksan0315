@@ -10,20 +10,26 @@ const MarginedLi = ({
 
 const Header = () => {
   return (
-    <div className='flex justify-between bg-blue-300 p-4'>
-      <span>익산이의 블로그</span>
-      <ul className='flex flew-row'>
-        <MarginedLi>
-          <Link href='/'>Home</Link>
-        </MarginedLi>
-        <MarginedLi>
-          <Link href='/Study'>Study</Link>
-        </MarginedLi>
-        <MarginedLi>
-          <Link href='/Portfolio'>Portfolio</Link>
-        </MarginedLi>
-      </ul>
-    </div>
+    <>
+      <div className='flex justify-between p-2'>
+        <span>Yiksan0315&apos;s Blog</span>
+        <ul className='flex flew-row'>
+          <MarginedLi>
+            <Link href='/'>Home</Link>
+          </MarginedLi>
+          <MarginedLi>
+            <Link href='/CV'>CV</Link>
+          </MarginedLi>
+          <MarginedLi>
+            <Link href='/Study'>Study</Link>
+          </MarginedLi>
+          <MarginedLi>
+            <Link href='/Portfolio'>Portfolio</Link>
+          </MarginedLi>
+        </ul>
+      </div>
+      <hr />
+    </>
   );
 };
 

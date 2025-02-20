@@ -1,6 +1,7 @@
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
-import MarkdownRender from '@/components/Study/MarkdownRender';
 import { getFolderInfo, getMdFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
+import FolderPage from '@/pages/Study/FolderPage';
+import MarkdownRender from '@/pages/Study/MarkdownPage';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
 
@@ -54,13 +55,13 @@ export default async function MarkdownPage({ params }: PageProps) {
         </MaxWidthWrapper>
       );
     } else {
-      // if folder
+      // if folder : only markdown files or folders
       const folderInfo = await getFolderInfo(fileUrl);
       return (
-        <MaxWidthWrapper className=''>
-          {folderInfo.map((item) => {
-            return <div key={item.url}>{item.name}</div>;
-          })}
+        <MaxWidthWrapper>
+          <FolderPage fileName={fileName} url={url}>
+            {folderInfo}
+          </FolderPage>
         </MaxWidthWrapper>
       );
     }
@@ -72,7 +73,7 @@ export default async function MarkdownPage({ params }: PageProps) {
     console.error(error);
     // notFound();
 
-    return <MaxWidthWrapper className=''>not found error</MaxWidthWrapper>;
+    return <MaxWidthWrapper className=''>404 not found error</MaxWidthWrapper>;
   }
 }
 
