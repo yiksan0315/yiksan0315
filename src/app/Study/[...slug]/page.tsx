@@ -1,7 +1,7 @@
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import { getFolderInfo, getMdFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
-import FolderPage from '@/pages/Study/FolderPage';
-import MarkdownPage from '@/pages/Study/MarkdownPage';
+import FolderPage from '@/containers/Study/FolderPage';
+import MarkdownPage from '@/containers/Study/MarkdownPage';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
 
@@ -61,7 +61,7 @@ export default async function Page({ params }: PageProps) {
      * if file not exist, treat as not found error
      * : to be considered again
      */
-    console.error(error);
+    console.error(`${error} | with: ${url}`);
     // notFound();
     return <MaxWidthWrapper className=''>404 not found error</MaxWidthWrapper>;
   }
