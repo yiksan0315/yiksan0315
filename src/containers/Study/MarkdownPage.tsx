@@ -12,7 +12,8 @@ import remarkParse from 'remark-parse';
 import UrlLinkComponent from '../../components/Study/UrlLinkComponent';
 import { removeExt, transformImageLinks } from '@/lib/markdown/remakeMarkdown';
 import { blockMathConverter } from '../../lib/markdown/remakeMarkdown';
-import Head from 'next/head';
+import remarkCallout from '@r4ai/remark-callout';
+import '@styles/callout.css';
 
 interface MarkdownViewProps {
   children: string;
@@ -88,7 +89,20 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
       <hr />
 
       <ReactMarkdown
-        remarkPlugins={[remarkParse, remarkMath, remarkGfm]}
+        remarkPlugins={[
+          remarkParse,
+          [
+            remarkCallout,
+            {
+              titleInner: () => {
+                // https://r4ai.github.io/remark-callout/docs/en/api-reference/type-aliases/options/#titleinner
+                return { tagName: 'span', properties: { dataCalloutTitleInner: true } };
+              },
+            },
+          ],
+          remarkMath,
+          remarkGfm,
+        ]}
         rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html', strict: false }]]}
         components={{
           code({ node, className, children, ref, ...props }) {
@@ -109,7 +123,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
           },
           blockquote({ children }) {
             return (
-              <blockquote className='p-2 mb-2 bg-slate-100 rounded-b-md border-l-violet-500 border-l-8'>
+              <blockquote className='px-1 py-0.5 mb-2 bg-slate-100  border-l-violet-500 border-l-8'>
                 {children}
               </blockquote>
             );
@@ -164,7 +178,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
             return <ol className='list-disc ml-8'>{children}</ol>;
           },
           li({ children }) {
-            return <li className='my-1'>{children}</li>;
+            return <li className='my-2'>{children}</li>;
           },
           a({ children, href }) {
             return (

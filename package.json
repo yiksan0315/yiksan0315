@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@r4ai/remark-callout": "^0.6.2",
     "@types/prismjs": "^1.26.4",
     "@types/react-syntax-highlighter": "^15.5.13",
     "class-variance-authority": "^0.7.0",
