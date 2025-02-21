@@ -1,3 +1,4 @@
+import config from '@/config/revalidate';
 import MarkdownFile from '@/types/MarkdownFile';
 import path from 'path';
 
@@ -23,6 +24,7 @@ export async function getMdFileContent(filePath: string): Promise<string> {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
+    next: config.next, // for caching: reavlidate
   });
 
   if (!response.ok) {
@@ -52,6 +54,7 @@ export async function getFolderInfo(folderPath: string, recursive: boolean = fal
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
+    next: config.next, // for caching: reavlidate
   });
 
   if (!response.ok) {

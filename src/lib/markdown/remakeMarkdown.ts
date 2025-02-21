@@ -22,94 +22,44 @@ export function blockMathConverter(markdown: string): string {
   let result = '';
   let isMathBlock = false;
   let buffer = '';
-
-  const lines = markdown.split('\n');
-
-  for (const line of lines) {
-    let current = line;
-
-    while (current.includes('$$')) {
-      const index = current.indexOf('$$');
-
-      if (isMathBlock) {
-        // 종료 기호 ($$) 발견 → 블록 종료
-        buffer += current.slice(0, index);
-        result += `\n$$\n${buffer.trim()}\n$$\n`;
-        buffer = '';
-        isMathBlock = false;
-      } else {
-        // 시작 기호 ($$) 발견 → 블록 시작
-        result += current.slice(0, index);
-        isMathBlock = true;
-      }
-
-      // 다음 문자열로 이동
-      current = current.slice(index + 2);
-    }
-
-    // 수식 블록 내부일 때는 buffer에 누적
-    if (isMathBlock) {
-      buffer += current + '\n';
-    } else {
-      result += current + '\n';
-    }
-  }
-
-  return result.trim();
-}
-
-// 그니까는 문제가 ==> \n을 >이 있을 때 삽입 ==> \n 다음 줄 앞에는 > 가 없음 ==> 그냥 일반 블록 처리.
-// > 이 들어가도 수학식 처리가 되니까, 만약 > 이 앞에 있는 경우에는 그에 맞게 처리가 되어야 함. 그래서 이 부분을 처리해주는 것이 필요함.
-
-/**
- * $$로 감싸진 수식을 처리하고, 인용구 내에서는 '>'를 유지하며,
- * 수식 뒤에 본문이 붙은 경우 본문 앞에도 '>'를 추가하는 함수
- */
-export function convertMath(markdown: string): string {
-  let result = '';
-  let isMathBlock = false;
-  let buffer = '';
   let isQuoteBlock = false;
 
   const lines = markdown.split('\n');
+  const quoteMathRegExp = new RegExp(/^>\s*\$/);
 
   for (const line of lines) {
     let current = line;
 
     while (current.includes('$$')) {
+      // find the line which contains '$$'
       const index = current.indexOf('$$');
 
       if (isMathBlock) {
-        // 종료 기호 ($$) 발견 → 블록 종료
-        buffer += current.slice(0, index);
+        // find end of math block ($$) → end of block
+        buffer += current.slice(0, index); // add content to buffer
         const content = buffer.trim();
 
-        // 종료 후 바로 본문이 붙어있으면 처리
+        // check if there is content after math block : if there is, add '>' to the front of the content to make it a quote block.
         const afterContent = current.slice(index + 2).trim();
-        const prefix = isQuoteBlock ? '> ' : '';
 
         if (isQuoteBlock) {
-          // 인용구 내 수식 처리
-          result += `\n> $$\n> ${content.replace(/\n/g, '\n> ')}\n> $$\n`;
+          // if mathblock is in quote block, add '>' to the front of the content.
+          result += `\n> $$\n> ${content.replace(/\n/g, '\n> ')}\n> $$`;
 
           if (afterContent) {
-            result += `> ${afterContent}\n`; // 본문 앞에 '>' 추가
+            result += `\n> `; // add '>' to the front of the content.
           }
         } else {
           // 일반 블록 수식 처리
           result += `\n$$\n${content}\n$$\n`;
-
-          if (afterContent) {
-            result += `${afterContent}\n`; // 일반 본문 처리
-          }
         }
 
         buffer = '';
         isMathBlock = false;
         isQuoteBlock = false;
       } else {
-        // 시작 기호 ($$) 발견 → 블록 시작
-        if (current.trimStart().startsWith('> $$') || current.trimStart().startsWith('>$$')) {
+        // check current line is quote block : if it is, > and $$ exists in the front of the line, with some spaces(or not).
+        if (quoteMathRegExp.test(current.trimStart())) {
           isQuoteBlock = true;
         }
 
@@ -129,4 +79,8 @@ export function convertMath(markdown: string): string {
   }
 
   return result.trim();
+}
+
+export function removeExt(name: string) {
+  return name.replace(/\.[^/.]+$/, '');
 }

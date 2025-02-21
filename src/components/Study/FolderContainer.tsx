@@ -1,6 +1,7 @@
 import MarkdownFile from '@/types/MarkdownFile';
 import Image from 'next/image';
 import Link from 'next/link';
+import { removeExt } from '../../lib/markdown/remakeMarkdown';
 
 const FolderContainer = ({ children }: { children: MarkdownFile }) => {
   return (
@@ -14,7 +15,7 @@ const FolderContainer = ({ children }: { children: MarkdownFile }) => {
           )}
         </div>
         <div>
-          <h2 className='text-2xl font-bold mb-2 '>{children.name}</h2>
+          <h2 className='text-2xl font-bold mb-2 '>{removeExt(children.name)}</h2>
           <p>metadata...</p>
         </div>
       </Link>

@@ -1,7 +1,7 @@
 import MaxWidthWrapper from '@/components/MaxWidthWrapper';
 import { getFolderInfo, getMdFileContent, isMarkdownFile } from '@/lib/markdown/getMdFiles';
 import FolderPage from '@/pages/Study/FolderPage';
-import MarkdownRender from '@/pages/Study/MarkdownPage';
+import MarkdownPage from '@/pages/Study/MarkdownPage';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
 
@@ -29,7 +29,7 @@ export async function generateStaticParams() {
   });
 }
 
-export default async function MarkdownPage({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
   const StudyFolder = process.env.MD_STUDY_DIR as string;
   const url = params.slug.join('/');
   const fileUrl = decodeURIComponent(StudyFolder + '/' + url);
@@ -40,9 +40,9 @@ export default async function MarkdownPage({ params }: PageProps) {
       const content = await getMdFileContent(fileUrl);
       return (
         <MaxWidthWrapper className='bg-slate-100'>
-          <MarkdownRender fileName={fileName} url={url}>
+          <MarkdownPage fileName={fileName} url={url}>
             {content}
-          </MarkdownRender>
+          </MarkdownPage>
         </MaxWidthWrapper>
       );
     } else {
@@ -66,6 +66,3 @@ export default async function MarkdownPage({ params }: PageProps) {
     return <MaxWidthWrapper className=''>404 not found error</MaxWidthWrapper>;
   }
 }
-
-export const revalidate = 3600; // 1hour
-// export const revalidate = 0; // for test

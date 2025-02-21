@@ -1,4 +1,5 @@
 import { getFolderInfo } from '@/lib/markdown/getMdFiles';
+import { removeExt } from '@/lib/markdown/remakeMarkdown';
 import MarkdownFile from '@/types/MarkdownFile';
 import Link from 'next/link';
 
@@ -36,15 +37,15 @@ const TempComponent = ({
 const NavFolder = async () => {
   const renderTree = (contents: MarkdownFile[]) => {
     return contents.map((item) => {
+      const name = removeExt(item.name);
       if (item.type === 'dir') {
-        // 폴더인 경우 재귀적으로 하위 폴더와 파일들을 렌더링
         return (
-          <TempComponent key={item.path} name={item.name} url={item.url} dir>
+          <TempComponent key={item.path} name={name} url={item.url} dir>
             <ul className='border-black border-2'>{renderTree(item.children as MarkdownFile[])}</ul>
           </TempComponent>
         );
       } else {
-        return <TempComponent key={item.path} name={item.name} url={item.url} />;
+        return <TempComponent key={item.path} name={name} url={item.url} />;
       }
     });
   };
@@ -53,9 +54,9 @@ const NavFolder = async () => {
   try {
     const data: MarkdownFile[] = await getFolderInfo(StudyFolder, true);
     return (
-      <div className='bg-slate-200'>
+      <aside className='bg-slate-200'>
         <ul>{renderTree(data)}</ul>
-      </div>
+      </aside>
     );
   } catch (e) {
     console.error(e);

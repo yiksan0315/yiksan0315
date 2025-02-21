@@ -10,8 +10,9 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import UrlLinkComponent from '../../components/Study/UrlLinkComponent';
-import { transformImageLinks } from '@/lib/markdown/remakeMarkdown';
-import { blockMathConverter, convertMath } from '../../lib/markdown/remakeMarkdown';
+import { removeExt, transformImageLinks } from '@/lib/markdown/remakeMarkdown';
+import { blockMathConverter } from '../../lib/markdown/remakeMarkdown';
+import Head from 'next/head';
 
 interface MarkdownViewProps {
   children: string;
@@ -43,17 +44,16 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
   const tags = data.tags;
 
   const urlToSameFolder = url.split('/').slice(0, -1).join('/');
-  // const newContent = blockMathConverter(transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`));
-  const newContent = convertMath(transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`));
+  const newContent = blockMathConverter(transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`));
 
   const fileUrl = decodeURIComponent(url);
   return (
     <div className='w-[876px] mx-auto bg-white  p-10 font-RIDIFont'>
-      <div className='flex flex-col'>
-        <p className='font-black text-5xl'>{fileName.split('.')[0]}</p>
+      <nav className='flex flex-col'>
+        <p className='font-black text-5xl'>{removeExt(fileName)}</p>
         {aliases && (
           <ul className='flex flex-row flex-wrap items-center'>
-            {'or'}
+            <li>{'or'}</li>
             {(aliases as string[]).map((item, index) => {
               return (
                 <li key={item} className='text-xl mx-1'>
@@ -83,13 +83,13 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
             </ul>
           )}
         </div>
-      </div>
+      </nav>
 
       <hr />
 
       <ReactMarkdown
         remarkPlugins={[remarkParse, remarkMath, remarkGfm]}
-        rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html' }]]}
+        rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html', strict: false }]]}
         components={{
           code({ node, className, children, ref, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
@@ -115,27 +115,47 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
             );
           },
           h1({ children }) {
-            return <h1 className='text-4xl font-extrabold mt-6 mb-2'>{children}</h1>;
+            return <h1 className='text-5xl font-extrabold mt-6 mb-2'>{children}</h1>;
           },
           h2({ children }) {
             return (
-              <h2 className='text-3xl font-bold mt-6 mb-2 text-red-400'>
+              <h2 className='text-4xl font-black mt-6 mb-2 text-red-400'>
                 {children}
                 <hr />
               </h2>
             );
           },
           h3({ children }) {
-            return <h3 className='text-2xl font-bold mt-6 mb-2'>{children}</h3>;
+            return (
+              <h3 className='text-3xl font-bold mt-6 mb-2'>
+                {children}
+                <hr />
+              </h3>
+            );
           },
           h4({ children }) {
-            return <h4 className='text-xl font-bold mt-6 mb-2'>{children}</h4>;
+            return (
+              <h4 className='text-2xl font-bold mt-6 mb-2'>
+                {children}
+                <hr />
+              </h4>
+            );
           },
           h5({ children }) {
-            return <h5 className='text-lg font-bold mt-6 mb-2'>{children}</h5>;
+            return (
+              <h5 className='text-xl font-bold mt-6 mb-2'>
+                {children}
+                <hr />
+              </h5>
+            );
           },
           h6({ children }) {
-            return <h6 className='text-base font-bold mt-6 mb-2'>{children}</h6>;
+            return (
+              <h6 className='text-lg font-bold mt-6 mb-2'>
+                {children}
+                <hr />
+              </h6>
+            );
           },
           ul({ children }) {
             return <ul className='list-disc ml-8'>{children}</ul>;
@@ -174,29 +194,33 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
                 alt={alt as string}
                 className='w-8/12 h-auto mx-auto my-2 object-cover rounded-lg border-2 border-gray-200 shadow-lg'
                 placeholder='blur'
-                blurDataURL='/images/no-image.png'
+                blurDataURL='/images/loading-bar.png'
                 width={200}
                 height={200}
               />
             );
           },
           table({ children }) {
-            return <table>{children}</table>;
+            return <table className=' mx-auto border-2 text-center border-slate-300 shadow-sm'>{children}</table>;
           },
           thead({ children }) {
-            return <thead>{children}</thead>;
+            return <thead className='bg-teal-100'>{children}</thead>;
+          },
+          tbody({ children }) {
+            // table : body
+            return <tbody className='divide-y divide-slate-200'>{children}</tbody>;
           },
           tr({ children }) {
             // table : row
-            return <tr>{children}</tr>;
+            return <tr className='divide-x divide-slate-200'>{children}</tr>;
           },
           td({ children }) {
             // table data : row contents
-            return <td>{children}</td>;
+            return <td className='p-1'>{children}</td>;
           },
           th({ children }) {
             //table heading : row or column title
-            return <th>{children}</th>;
+            return <th className='p-2'>{children}</th>;
           },
         }}
       >

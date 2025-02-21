@@ -7,10 +7,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     if (!isDevelopment) {
-      console.log('0. Checking signature');
+      console.log('Checking signature...');
       const secret = process.env.GITHUB_WEBHOOK_SECRET;
       const signature = req.headers.get('x-hub-signature-256');
-      const rawBody = await req.text();
 
       if (!secret) {
         throw new StatusError(500, 'No secret set.');
@@ -18,12 +17,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (!signature) {
         throw new StatusError(400, 'No signature.');
       }
-      if (!rawBody) {
-        throw new StatusError(400, 'No rawBody.');
-      }
 
-      // if (!(await new Webhooks({ secret }).verify(rawBody, signature))) {
-      //   throw new StatusError(400, 'Fail signature verify');
+      // if(secret != signature) {
+      //   throw new StatusError(400, 'Invalid signature.');
       // }
     }
 

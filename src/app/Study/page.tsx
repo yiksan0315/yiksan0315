@@ -18,5 +18,3 @@ export default async function Page() {
     </MaxWidthWrapper>
   );
 }
-
-const revalidate = 3600;
