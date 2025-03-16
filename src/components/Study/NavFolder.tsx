@@ -50,9 +50,8 @@ const NavFolder = async () => {
     });
   };
 
-  const StudyFolder = process.env.MD_STUDY_DIR as string;
   try {
-    const data: MarkdownFile[] = await getFolderInfo(StudyFolder, true);
+    const data: MarkdownFile[] = await getFolderInfo('', true);
     return (
       <aside className='bg-slate-200'>
         <ul>{renderTree(data)}</ul>

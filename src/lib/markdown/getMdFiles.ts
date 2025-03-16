@@ -1,3 +1,4 @@
+import blacklist from '@/config/blacklist';
 import config from '@/config/revalidate';
 import MarkdownFile from '@/types/MarkdownFile';
 import path from 'path';
@@ -40,11 +41,10 @@ export async function getMdFileContent(filePath: string): Promise<string> {
     get directory structure of markdown files, except image file and image file folder named 'attachments'.
     if recursive = true then get all files in the folder.
 */
-export async function getFolderInfo(folderPath: string, recursive: boolean = false): Promise<MarkdownFile[]> {
+export async function getFolderInfo(folderPath: string = '', recursive: boolean = false): Promise<MarkdownFile[]> {
   const apiUrl = process.env.MARKDOWN_API;
   const token = process.env.GITHUB_TOKEN;
-  const targetDir = process.env.MD_STUDY_DIR;
-  if (!apiUrl || !token || !targetDir) {
+  if (!apiUrl || !token) {
     throw new Error('environment is not defined');
   }
 
@@ -64,12 +64,12 @@ export async function getFolderInfo(folderPath: string, recursive: boolean = fal
   const contents = await response.json();
   const folderInfo: MarkdownFile[] = await Promise.all(
     contents
-      .filter((content: any) => content.name !== 'attachments')
+      .filter((content: any) => !blacklist.includes(content.name))
       .map(async (content: any) => {
         return {
           name: content.name,
           path: content.path,
-          url: content.path.replace(targetDir, 'Study'),
+          url: 'Study/' + content.path,
           type: content.type,
           children: recursive && content.type === 'dir' ? await getFolderInfo(content.path, true) : undefined,
         };

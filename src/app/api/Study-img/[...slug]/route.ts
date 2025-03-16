@@ -13,15 +13,14 @@ const mimeTypes: Record<string, string> = {
 export async function GET(request: NextRequest, { params }: PageProps) {
   const apiUrl = process.env.MARKDOWN_API;
   const token = process.env.GITHUB_TOKEN;
-  const studyFolder = process.env.MD_STUDY_DIR;
 
   try {
-    if (!apiUrl || !token || !studyFolder) {
+    if (!apiUrl || !token) {
       throw new StatusError(500, 'environment is not defined');
     }
 
     const slugPath = params.slug.join('/');
-    const absUrl = apiUrl + '/' + studyFolder + '/' + slugPath;
+    const absUrl = apiUrl + '/' + slugPath;
     const metadataResponse = await fetch(absUrl, {
       headers: {
         Authorization: `Bearer ${token}`,

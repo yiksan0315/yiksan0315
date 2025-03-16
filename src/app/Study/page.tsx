@@ -4,8 +4,7 @@ import { getFolderInfo } from '@/lib/markdown/getMdFiles';
 import MarkdownFile from '@/types/MarkdownFile';
 
 export default async function Page() {
-  const StudyFolder = process.env.MD_STUDY_DIR as string;
-  const folderInfo: MarkdownFile[] = await getFolderInfo(StudyFolder);
+  const folderInfo: MarkdownFile[] = await getFolderInfo();
   return (
     <MaxWidthWrapper className='font-RIDIFont'>
       <div className='w-[876px] mx-auto bg-gray-50 p-10 '>

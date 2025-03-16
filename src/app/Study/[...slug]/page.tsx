@@ -17,8 +17,7 @@ function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
 }
 
 export async function generateStaticParams() {
-  const StudyFolder = process.env.MD_STUDY_DIR as string;
-  const files: MarkdownFile[] = await getFolderInfo(StudyFolder, true); // root
+  const files: MarkdownFile[] = await getFolderInfo('', true); // root
   const flattenedTree: MarkdownFile[] = flattenTree(files);
   return flattenedTree.map((item: MarkdownFile) => {
     // slug: path to file, split by '/' : without 'Study' path
@@ -30,9 +29,8 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: PageProps) {
-  const StudyFolder = process.env.MD_STUDY_DIR as string;
   const url = params.slug.join('/');
-  const fileUrl = decodeURIComponent(StudyFolder + '/' + url);
+  const fileUrl = decodeURIComponent(url);
   const fileName = fileUrl.split('/').pop() as string; // last element of path : name
 
   try {
