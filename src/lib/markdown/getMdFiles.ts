@@ -69,7 +69,7 @@ export async function getFolderInfo(folderPath: string = '', recursive: boolean 
         return {
           name: content.name,
           path: content.path,
-          url: 'Study/' + content.path,
+          url: '/Study/' + content.path,
           type: content.type,
           children: recursive && content.type === 'dir' ? await getFolderInfo(content.path, true) : undefined,
         };

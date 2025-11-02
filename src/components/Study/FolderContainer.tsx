@@ -6,7 +6,7 @@ import { removeExt } from '../../lib/markdown/remakeMarkdown';
 const FolderContainer = ({ children }: { children: MarkdownFile }) => {
   return (
     <div className='p-2 my-6 bg-slate-100 rounded-md'>
-      <Link href={'/' + children.url} className='flex flew-row'>
+      <Link href={children.url} className='flex flew-row'>
         <div className='p-4 bg-slate-200 rounded-lg mr-4'>
           {children.type === 'file' ? (
             <Image src='/images/markdown.png' alt='file' width={40} height={40} />

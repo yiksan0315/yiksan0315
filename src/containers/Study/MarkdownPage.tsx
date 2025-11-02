@@ -45,12 +45,13 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
   const tags = data.tags;
 
   const urlToSameFolder = url.split('/').slice(0, -1).join('/');
-  const newContent = blockMathConverter(transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`));
+  const newContent = blockMathConverter(transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`)); // for mathjax test
+  // const newContent = transformImageLinks(content, `/api/Study-img/${urlToSameFolder}`);
 
   const fileUrl = decodeURIComponent(url);
   return (
-    <div className='w-[876px] mx-auto bg-white  p-10 font-RIDIFont'>
-      <nav className='flex flex-col'>
+    <article className='w-[876px] mx-auto bg-white p-10 font-RIDIFont'>
+      <header className='flex flex-col'>
         <p className='font-black text-5xl'>{removeExt(fileName)}</p>
         {aliases && (
           <ul className='flex flex-row flex-wrap items-center'>
@@ -66,10 +67,10 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
           </ul>
         )}
         <UrlLinkComponent>{fileUrl}</UrlLinkComponent>
-        <div className='flex flex-row justify-between w-8/12'>
+        <time className='flex flex-row justify-between w-8/12'>
           <span className='font-bold '>Create : {createdDate}</span>
           <span className='font-bold '>Update : {updatedDate}</span>
-        </div>
+        </time>
         <div className='flex flex-row flex-wrap items-center p-2'>
           <p className='text-xl font-bold'># Tag: </p>
           {tags && (
@@ -84,7 +85,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
             </ul>
           )}
         </div>
-      </nav>
+      </header>
 
       <hr />
 
@@ -100,7 +101,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
               },
             },
           ],
-          remarkMath,
+          [remarkMath, { singleDollarTextMath: true }],
           remarkGfm,
         ]}
         rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html', strict: false }]]}
@@ -240,7 +241,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
       >
         {newContent}
       </ReactMarkdown>
-    </div>
+    </article>
   );
 };
 
