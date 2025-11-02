@@ -23,7 +23,8 @@ export async function generateStaticParams() {
   const flattenedTree: MarkdownFile[] = flattenTree(files);
   return flattenedTree.map((item: MarkdownFile) => {
     // slug: path to file, split by '/' : without 'Study' path
-    const slug_url = item.url.replace('Study' + '/', '').split('/');
+    const slug_url = item.url.replace('/Study' + '/', '').split('/');
+    console.log('Generating static param for:', slug_url);
     return {
       slug: slug_url,
     };

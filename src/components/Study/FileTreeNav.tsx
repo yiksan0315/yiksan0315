@@ -35,7 +35,6 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
           </Collapsible>
         );
       } else {
-        console.log('Current Path:', pathname, ' | Item URL:', item.url, ' | isActive:', isActive);
         return (
           <Link
             href={item.url}
