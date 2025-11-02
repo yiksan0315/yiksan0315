@@ -13,13 +13,21 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
   const renderTree = (contents: MarkdownFile[]) => {
     return contents.map((item) => {
       const name = removeExt(item.name);
+
+      const isActive = decodeURIComponent(pathname) === item.url;
       if (item.type === 'dir') {
         return (
           <Collapsible defaultOpen={false} className='pl-4' key={item.url}>
             <CollapsibleTrigger className='flex items-center space-x-2 py-1 group'>
               <ChevronRight className='h-4 w-4 transform transition-transform group-data-[state=open]:rotate-90' />
               <Folder className='h-4 w-4 text-sky-500' />
-              <Link href={item.url} className='hover:bg-muted hover:underline'>
+              <Link
+                href={item.url}
+                className={cn(
+                  'hover:bg-muted hover:underline',
+                  isActive ? 'bg-primary/20 text-primary' : 'hover:bg-muted hover:underline'
+                )}
+              >
                 {name}
               </Link>
             </CollapsibleTrigger>
@@ -27,7 +35,6 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
           </Collapsible>
         );
       } else {
-        const isActive = decodeURIComponent(pathname) === item.url;
         console.log('Current Path:', pathname, ' | Item URL:', item.url, ' | isActive:', isActive);
         return (
           <Link
