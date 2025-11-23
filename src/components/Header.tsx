@@ -12,7 +12,7 @@ const Header = () => {
   return (
     <>
       <div className='flex justify-between p-2'>
-        <span>Yiksan0315&apos;s Blog</span>
+        <span className='text-primary'>Yiksan0315&apos;s Blog</span>
         <ul className='flex flew-row'>
           <MarginedLi>
             <Link href='/'>Home</Link>

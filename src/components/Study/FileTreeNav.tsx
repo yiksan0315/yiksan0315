@@ -18,20 +18,25 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
       if (item.type === 'dir') {
         return (
           <Collapsible defaultOpen={false} className='pl-4' key={item.url}>
-            <CollapsibleTrigger className='flex items-center space-x-2 py-1 group'>
-              <ChevronRight className='h-4 w-4 transform transition-transform group-data-[state=open]:rotate-90' />
-              <Folder className='h-4 w-4 text-sky-500' />
+            <CollapsibleTrigger className='flex items-center justify-start space-x-2 py-1 group'>
+              <ChevronRight className='min-h-4 min-w-4 h-4 w-4 transform transition-transform group-data-[state=open]:rotate-90' />
               <Link
                 href={item.url}
                 className={cn(
-                  'hover:bg-muted hover:underline',
-                  isActive ? 'bg-primary/20 text-primary' : 'hover:bg-muted hover:underline'
+                  'flex items-center space-x-2 py-1 pl-1 pr-2 rounded-md',
+                  isActive ? 'bg-primary/20' : 'hover:bg-muted hover:underline'
                 )}
               >
-                {name}
+                <Folder className='min-h-4 min-w-4 w-4 h-4  text-sky-500' />
+
+                <span>{name}</span>
               </Link>
             </CollapsibleTrigger>
-            <CollapsibleContent>{renderTree(item.children as MarkdownFile[])}</CollapsibleContent>
+            <CollapsibleContent>
+              <div className='border-l border-muted-foreground/20 my-1'>
+                {renderTree(item.children as MarkdownFile[])}
+              </div>
+            </CollapsibleContent>
           </Collapsible>
         );
       } else {
@@ -39,12 +44,12 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
           <Link
             href={item.url}
             className={cn(
-              'flex items-center space-x-2 py-1 pl-12 pr-2 rounded-md',
-              isActive ? 'bg-primary/20 text-primary' : 'hover:bg-muted hover:underline'
+              'flex items-center space-x-2 py-2 pl-11 pr-2 rounded-md',
+              isActive ? 'bg-primary/20' : 'hover:bg-muted hover:underline'
             )}
             key={item.url}
           >
-            <FileText className='h-4 w-4 text-gray-500' />
+            <FileText className='min-h-4 min-w-4 h-4 w-4 text-gray-500' />
             <span>{name}</span>
           </Link>
         );
@@ -54,7 +59,7 @@ const FileTreeNav = ({ folderInfo }: { folderInfo: MarkdownFile[] }) => {
 
   return (
     <nav className='flex flex-col space-y-1'>
-      <span>sidebar</span>
+      <h2>Contents</h2>
       {renderTree(folderInfo)}
     </nav>
   );

@@ -24,7 +24,6 @@ export async function generateStaticParams() {
   return flattenedTree.map((item: MarkdownFile) => {
     // slug: path to file, split by '/' : without 'Study' path
     const slug_url = item.url.replace('/Study' + '/', '').split('/');
-    console.log('Generating static param for:', slug_url);
     return {
       slug: slug_url,
     };
@@ -41,12 +40,9 @@ export default async function Page({ params }: PageProps) {
       const content = await getMdFileContent(fileUrl);
       return (
         <div className='container relative mx-auto p-4 lg:px-8'>
-          <div className='flex flex-row justify-between'>
-            <MarkdownPage fileName={fileName} url={url}>
-              {content}
-            </MarkdownPage>
-            <TocContainer />
-          </div>
+          <MarkdownPage fileName={fileName} url={url}>
+            {content}
+          </MarkdownPage>
         </div>
       );
     } else {

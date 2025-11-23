@@ -14,6 +14,7 @@ import { removeExt, transformImageLinks } from '@/lib/markdown/remakeMarkdown';
 import { blockMathConverter } from '../../lib/markdown/remakeMarkdown';
 import remarkCallout from '@r4ai/remark-callout';
 import '@styles/callout.css';
+import TocContainer from './TocContainer';
 
 interface MarkdownViewProps {
   children: string;
@@ -50,7 +51,7 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
 
   const fileUrl = decodeURIComponent(url);
   return (
-    <article className='w-[876px] mx-auto bg-white p-10 font-RIDIFont'>
+    <article className='flex flex-col w-[876px] mx-auto bg-white p-10 font-RIDIFont'>
       <header className='flex flex-col'>
         <p className='font-black text-5xl'>{removeExt(fileName)}</p>
         {aliases && (
@@ -85,162 +86,166 @@ const MarkdownPage = ({ children, fileName, url }: MarkdownViewProps) => {
             </ul>
           )}
         </div>
+
+        <hr />
       </header>
 
-      <hr />
+      <div>
+        <TocContainer />
 
-      <ReactMarkdown
-        remarkPlugins={[
-          remarkParse,
-          [
-            remarkCallout,
-            {
-              titleInner: () => {
-                // https://r4ai.github.io/remark-callout/docs/en/api-reference/type-aliases/options/#titleinner
-                return { tagName: 'span', properties: { dataCalloutTitleInner: true } };
+        <ReactMarkdown
+          remarkPlugins={[
+            remarkParse,
+            [
+              remarkCallout,
+              {
+                titleInner: () => {
+                  // https://r4ai.github.io/remark-callout/docs/en/api-reference/type-aliases/options/#titleinner
+                  return { tagName: 'span', properties: { dataCalloutTitleInner: true } };
+                },
               },
+            ],
+            [remarkMath, { singleDollarTextMath: true }],
+            remarkGfm,
+          ]}
+          rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html', strict: false }]]}
+          components={{
+            code({ node, className, children, ref, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              return match ? (
+                <SyntaxHighlighter
+                  className='rounded-lg'
+                  language={match[1]}
+                  PreTag='div'
+                  {...props}
+                  style={materialDark}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code {...props}>{children}</code>
+              );
             },
-          ],
-          [remarkMath, { singleDollarTextMath: true }],
-          remarkGfm,
-        ]}
-        rehypePlugins={[[rehypeKatex, { displayMode: true, throwOnError: false, output: 'html', strict: false }]]}
-        components={{
-          code({ node, className, children, ref, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-            return match ? (
-              <SyntaxHighlighter
-                className='rounded-lg'
-                language={match[1]}
-                PreTag='div'
-                {...props}
-                style={materialDark}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
-            ) : (
-              <code {...props}>{children}</code>
-            );
-          },
-          blockquote({ children }) {
-            return (
-              <blockquote className='px-1 py-0.5 mb-2 bg-slate-100  border-l-violet-500 border-l-8'>
-                {children}
-              </blockquote>
-            );
-          },
-          h1({ children }) {
-            return <h1 className='text-5xl font-extrabold mt-6 mb-2'>{children}</h1>;
-          },
-          h2({ children }) {
-            return (
-              <h2 className='text-4xl font-black mt-6 mb-2 text-red-400'>
-                {children}
-                <hr />
-              </h2>
-            );
-          },
-          h3({ children }) {
-            return (
-              <h3 className='text-3xl font-bold mt-6 mb-2'>
-                {children}
-                <hr />
-              </h3>
-            );
-          },
-          h4({ children }) {
-            return (
-              <h4 className='text-2xl font-bold mt-6 mb-2'>
-                {children}
-                <hr />
-              </h4>
-            );
-          },
-          h5({ children }) {
-            return (
-              <h5 className='text-xl font-bold mt-6 mb-2'>
-                {children}
-                <hr />
-              </h5>
-            );
-          },
-          h6({ children }) {
-            return (
-              <h6 className='text-lg font-bold mt-6 mb-2'>
-                {children}
-                <hr />
-              </h6>
-            );
-          },
-          ul({ children }) {
-            return <ul className='list-disc ml-8'>{children}</ul>;
-          },
-          ol({ children }) {
-            return <ol className='list-disc ml-8'>{children}</ol>;
-          },
-          li({ children }) {
-            return <li className='my-2'>{children}</li>;
-          },
-          a({ children, href }) {
-            return (
-              <Link href={href as string} className='text-violet-500 underline'>
-                {children}
-              </Link>
-            );
-          },
-          p({ children }) {
-            return <p className='my-4 leading-relaxed'>{children}</p>;
-          },
+            blockquote({ children }) {
+              return (
+                <blockquote className='px-1 py-0.5 mb-2 bg-slate-100  border-l-violet-500 border-l-8'>
+                  {children}
+                </blockquote>
+              );
+            },
+            h1({ children }) {
+              return <h1 className='text-5xl font-extrabold mt-6 mb-2'>{children}</h1>;
+            },
+            h2({ children }) {
+              return (
+                <h2 className='text-4xl font-black mt-6 mb-2 text-red-400'>
+                  {children}
+                  <hr />
+                </h2>
+              );
+            },
+            h3({ children }) {
+              return (
+                <h3 className='text-3xl font-bold mt-6 mb-2'>
+                  {children}
+                  <hr />
+                </h3>
+              );
+            },
+            h4({ children }) {
+              return (
+                <h4 className='text-2xl font-bold mt-6 mb-2'>
+                  {children}
+                  <hr />
+                </h4>
+              );
+            },
+            h5({ children }) {
+              return (
+                <h5 className='text-xl font-bold mt-6 mb-2'>
+                  {children}
+                  <hr />
+                </h5>
+              );
+            },
+            h6({ children }) {
+              return (
+                <h6 className='text-lg font-bold mt-6 mb-2'>
+                  {children}
+                  <hr />
+                </h6>
+              );
+            },
+            ul({ children }) {
+              return <ul className='list-disc ml-8'>{children}</ul>;
+            },
+            ol({ children }) {
+              return <ol className='list-disc ml-8'>{children}</ol>;
+            },
+            li({ children }) {
+              return <li className='my-2'>{children}</li>;
+            },
+            a({ children, href }) {
+              return (
+                <Link href={href as string} className='text-violet-500 underline'>
+                  {children}
+                </Link>
+              );
+            },
+            p({ children }) {
+              return <p className='my-4 leading-relaxed'>{children}</p>;
+            },
 
-          strong({ children }) {
-            return <strong className='font-bold text-red-600'>{children}</strong>;
-          },
-          em({ children }) {
-            return <em className='italic text-green-600'>{children}</em>;
-          },
-          img({ src, alt }) {
-            if (!src) {
-              alt = 'No Image';
-              src = '/images/no-image.png';
-            }
-            return (
-              <Image
-                src={src}
-                alt={alt as string}
-                className='w-8/12 h-auto mx-auto my-2 object-cover rounded-lg border-2 border-gray-200 shadow-lg'
-                placeholder='blur'
-                blurDataURL='/images/loading-bar.png'
-                width={200}
-                height={200}
-              />
-            );
-          },
-          table({ children }) {
-            return <table className=' mx-auto border-2 text-center border-slate-300 shadow-sm'>{children}</table>;
-          },
-          thead({ children }) {
-            return <thead className='bg-teal-100'>{children}</thead>;
-          },
-          tbody({ children }) {
-            // table : body
-            return <tbody className='divide-y divide-slate-200'>{children}</tbody>;
-          },
-          tr({ children }) {
-            // table : row
-            return <tr className='divide-x divide-slate-200'>{children}</tr>;
-          },
-          td({ children }) {
-            // table data : row contents
-            return <td className='p-1'>{children}</td>;
-          },
-          th({ children }) {
-            //table heading : row or column title
-            return <th className='p-2'>{children}</th>;
-          },
-        }}
-      >
-        {newContent}
-      </ReactMarkdown>
+            strong({ children }) {
+              return <strong className='font-bold text-red-600'>{children}</strong>;
+            },
+            em({ children }) {
+              return <em className='italic text-green-600'>{children}</em>;
+            },
+            img({ src, alt }) {
+              if (!src) {
+                alt = 'No Image';
+                src = '/images/no-image.png';
+              }
+              return (
+                <Image
+                  src={src}
+                  alt={alt as string}
+                  className='w-8/12 h-auto mx-auto my-2 object-cover rounded-lg border-2 border-gray-200 shadow-lg'
+                  placeholder='blur'
+                  blurDataURL='/images/loading-bar.png'
+                  width={200}
+                  height={200}
+                />
+              );
+            },
+            table({ children }) {
+              return <table className=' mx-auto border-2 text-center border-slate-300 shadow-sm'>{children}</table>;
+            },
+            thead({ children }) {
+              return <thead className='bg-teal-100'>{children}</thead>;
+            },
+            tbody({ children }) {
+              // table : body
+              return <tbody className='divide-y divide-slate-200'>{children}</tbody>;
+            },
+            tr({ children }) {
+              // table : row
+              return <tr className='divide-x divide-slate-200'>{children}</tr>;
+            },
+            td({ children }) {
+              // table data : row contents
+              return <td className='p-1'>{children}</td>;
+            },
+            th({ children }) {
+              //table heading : row or column title
+              return <th className='p-2'>{children}</th>;
+            },
+          }}
+        >
+          {newContent}
+        </ReactMarkdown>
+      </div>
     </article>
   );
 };
