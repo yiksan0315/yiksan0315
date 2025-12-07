@@ -1,6 +1,6 @@
 import StatusError from '@/lib/api/statusError';
 import PageProps from '@/types/PageProps';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const mimeTypes: Record<string, string> = {
   png: 'image/png',
@@ -10,16 +10,17 @@ const mimeTypes: Record<string, string> = {
   webp: 'image/webp',
 };
 
-export async function GET(request: NextRequest, { params }: PageProps) {
+export async function GET(_: Request, { params }: PageProps) {
   const apiUrl = process.env.MARKDOWN_API;
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.API_GITHUB_TOKEN;
 
   try {
     if (!apiUrl || !token) {
       throw new StatusError(500, 'environment is not defined');
     }
 
-    const slugPath = params.slug.join('/');
+    const { slug } = await params;
+    const slugPath = slug.join('/');
     const absUrl = apiUrl + '/' + slugPath;
     const metadataResponse = await fetch(absUrl, {
       headers: {
