@@ -5,7 +5,6 @@ import MarkdownPage from '@/containers/Study/MarkdownPage';
 import MarkdownFile from '@/types/MarkdownFile';
 import PageProps from '@/types/PageProps';
 import { Metadata } from 'next';
-import TocContainer from '@/containers/Study/TocContainer';
 
 function flattenTree(files: MarkdownFile[]): MarkdownFile[] {
   let fileList: MarkdownFile[] = [];
@@ -31,7 +30,9 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: PageProps) {
-  const url = params.slug.join('/');
+  // for preventing sync-dynamic-apis issues : https://nextjs.org/docs/messages/sync-dynamic-apis
+  const { slug } = await params;
+  const url = slug.join('/');
   const fileUrl = decodeURIComponent(url); // In real url, it includes escape sequence
   const fileName = fileUrl.split('/').pop() as string; // last element of path : name
 
@@ -70,7 +71,9 @@ export default async function Page({ params }: PageProps) {
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const url = params.slug.join('/');
+  // for preventing sync-dynamic-apis issues : https://nextjs.org/docs/messages/sync-dynamic-apis
+  const { slug } = await params;
+  const url = slug.join('/');
   const fileUrl = decodeURIComponent(url); // In real url, it includes escape sequence
   const fileName = fileUrl.split('/').pop() as string; // last element of path : name
 

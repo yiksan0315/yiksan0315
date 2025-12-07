@@ -1,5 +1,5 @@
-import matter from 'gray-matter';
 import 'katex/dist/katex.css';
+import matter from 'gray-matter';
 import Image from 'next/image';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -11,7 +11,7 @@ import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
 import UrlLinkComponent from '../../components/Study/UrlLinkComponent';
 import { removeExt, transformImageLinks } from '@/lib/markdown/remakeMarkdown';
-import { blockMathConverter } from '../../lib/markdown/remakeMarkdown';
+import { blockMathConverter } from '@/lib/markdown/remakeMarkdown';
 import remarkCallout from '@r4ai/remark-callout';
 import '@styles/callout.css';
 import TocContainer from './TocContainer';
